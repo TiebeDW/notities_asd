@@ -59,7 +59,7 @@ public class Rekening {
 }
 ```
 Testklasse:
-```
+```java
 package testen;
 
 import org.junit.jupiter.api.Assertions;
@@ -128,7 +128,7 @@ Create a class **BowlingGame** and test **BowlingGameTest**
 
 #### Code
 Domeinklasse:
-```
+```java
 package domain;
 public class BowlingGame {
 	
@@ -176,7 +176,7 @@ public class BowlingGame {
 }
 ```
 Testklasse:
-```
+```java
 package tests;
 
 import org.junit.jupiter.api.Assertions;
@@ -273,7 +273,7 @@ class BowlingGameTest {
 
 #### Vraag 1:  
 Methode geefReductiebonCodes: een lijst van reductiebonCodes wordt teruggegeven waarvan de percentage hoger ligt dan het meegegeven percentage.
-````Java
+````java
 public List<String> geefReductiebonCodes(int percentage) {
     return reductiebonLijst.stream()
         .filter(r -> r.getPercentage()>percentage)
@@ -284,7 +284,7 @@ public List<String> geefReductiebonCodes(int percentage) {
 
 #### Vraag 2:  
 Methode sorteerReductiebonnen: sorteer de lijst met reductiebonnen volgens oplopende percentage (van laag naar hoog), en bij gelijke percentage op reductiebonCode – alfabetisch omgekeerde volgorde. (De originele lijst van reductiebonnen is gewijzigd.)
-````
+````java
 public void sorteerReductiebonnen() {
 		reductiebonLijst.sort(Comparator.comparing(Reductiebon::getPercentage)
 				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode).reversed()));
