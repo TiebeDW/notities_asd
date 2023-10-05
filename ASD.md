@@ -127,9 +127,143 @@ Create a class **BowlingGame** and test **BowlingGameTest**
 ![Class Diagram Bowling](images/CD_OefeningBowling.png)
 
 #### Code
+Domeinklasse:
 ```
+package domain;
+public class BowlingGame {
+	
+	private int rolls[] = new int[21];
+	private int currentRoll = 0;
+
+	public void roll(int pins) {
+		rolls[currentRoll++] = pins;
+		
+	}
+
+	public int score() {
+		int score = 0;
+		for(int frameIndex = 0, frame = 0;frame<10; frameIndex+=2, frame++) 
+			if(isStrike(frameIndex)) {
+				score += 10 + strikeBonus(frameIndex);
+				frameIndex--;
+			}
+			else if(isSpare(frameIndex))
+				score += 10 + spareBonus(frameIndex);
+			else
+				score += sumOfPinsInFrame(frameIndex);
+		return score;
+	}
+	
+	private int sumOfPinsInFrame(int frameIndex) {
+		return  rolls[frameIndex] + rolls[frameIndex+1];
+	}
+	
+	private int strikeBonus(int frameIndex) {
+		return rolls[frameIndex+1] + rolls[frameIndex+2];
+	}
+	
+	private int spareBonus(int frameIndex) {
+		return rolls[frameIndex+2];
+	}
+	
+	private boolean isStrike(int frameIndex) {
+		return rolls[frameIndex]==10;
+	}
+
+	private boolean isSpare(int frameIndex) {
+		return rolls[frameIndex] + rolls[frameIndex + 1] == 10;
+	}
+}
 ```
-Werkt nog niet, TODO
+Testklasse:
+```
+package tests;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import domain.BowlingGame;
+
+class BowlingGameTest {
+	
+	private BowlingGame game;
+	
+	@BeforeEach
+	public void before() {
+		game = new BowlingGame();
+	}
+	
+	private void rollMany(int n, int pins) {
+		for(int i=0;i<n;i++) game.roll(pins);
+	}
+	
+	private void rollSpare() {
+		game.roll(5);
+		game.roll(5);
+	}
+	
+	private void rollStrike() {
+		game.roll(10);
+	}
+	
+	@ParameterizedTest
+	@CsvSource({"0,0","1,20"})
+	public void testSameNumberOfPins(int number, int expexted) {
+		rollMany(20, number);
+		Assertions.assertEquals(expexted, game.score());
+	}
+	
+	@Test
+	public void testOneSpare() {
+		rollSpare();
+		game.roll(3);
+		rollMany(17, 0);
+		Assertions.assertEquals(16, game.score());
+	}
+	
+	@Test
+	public void testTwoSpare() {
+		rollSpare();
+		rollSpare();
+		game.roll(3);
+		rollMany(15, 0);
+		Assertions.assertEquals(31, game.score());
+	}
+
+	@Test
+	public void testOneStrike() {
+		rollStrike();
+		game.roll(3);
+		game.roll(4);
+		rollMany(16, 0);
+		Assertions.assertEquals(24, game.score());
+	}
+	
+	@Test
+	public void testAllStrikes() {
+		for(int i = 0; i<12; i++) rollStrike();
+		Assertions.assertEquals(300, game.score());
+	}
+	
+	@Test 
+	void testAllSpares_5_5() {
+		for(int i = 0; i<10; i++) rollSpare();
+		game.roll(5);
+		Assertions.assertEquals(150, game.score());
+	}
+	
+	@Test
+	public void testScenario() {
+		int[] pins = {1,4,4,5,6,4,5,5,10,0,1,7,3,6,4,10,2,8,6};
+		for(int i=0; i<pins.length;i++) game.roll(pins[i]);
+		Assertions.assertEquals(133, game.score());
+	}
+	
+}
+```
 
 ## Collections
 
