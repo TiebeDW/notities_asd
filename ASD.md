@@ -28,7 +28,7 @@ De rest van de deling eerste tien cijfers door 97 moet gelijk zijn aan de twee l
 
 #### Code:
 Domeinklasse:
-```
+```java
 package domein;
 
 public class Rekening {
