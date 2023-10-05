@@ -4,7 +4,7 @@
 
 ![Associaties](images/associaties.png)
 
-**Opgave:**  
+#### Opgave: 
 
 **Mens** definieert wat je met een **mens** kan doen.  
 **Ik** ben een **mens**.  
@@ -21,12 +21,13 @@ protected = is private + subklasses toegang geven, package access
 ### Oefening 1
 ![](images/CD_Herhaling_Oef1.png)
 
-**Opgave**:
+#### Opgave:
 
 Formaat: 3cijfers-7cijfers-2cijfers  
 De rest van de deling eerste tien cijfers door 97 moet gelijk zijn aan de twee laatste cijfers.
 
-**Code:**
+#### Code:
+Domeinklasse:
 ```
 package domein;
 
@@ -57,7 +58,7 @@ public class Rekening {
 	}
 }
 ```
-
+Testklasse:
 ```
 package testen;
 
@@ -108,7 +109,7 @@ class RekeningTest {
 
 ### Oefening Bowling
 
-**Opgave**
+#### Opgave
 
 ![](images/Bowling.png)  
 The game consists of 10 frames as shown above.  In each frame the player hastwo opportunities to knock down 10 pins.  The score for the frame is the totalnumber of pins knocked down, plus bonuses for strikes and spares.  
@@ -122,9 +123,13 @@ Write a class named "BowlingGame" that has two methods:
 
 Create a class **BowlingGame** and test **BowlingGameTest**
 
+#### Ontwerp:
+![Class Diagram Bowling](images/CD_OefeningBowling.png)
 
-
-
+#### Code
+```
+```
+Werkt nog niet, TODO
 
 ## Collections
 
@@ -132,13 +137,22 @@ Create a class **BowlingGame** and test **BowlingGameTest**
 
 ![Class Diagram Reductiebonnen](images/CD_Reductie.png)
 
-**Vraag 1:**  
+#### Vraag 1:  
 Methode geefReductiebonCodes: een lijst van reductiebonCodes wordt teruggegeven waarvan de percentage hoger ligt dan het meegegeven percentage.
-````
+````Java
 public List<String> geefReductiebonCodes(int percentage) {
     return reductiebonLijst.stream()
         .filter(r -> r.getPercentage()>percentage)
         .map(Reductiebon::getReductiebonCode)
         .collect(Collectors.toList());
+}
+````
+
+#### Vraag 2:  
+Methode sorteerReductiebonnen: sorteer de lijst met reductiebonnen volgens oplopende percentage (van laag naar hoog), en bij gelijke percentage op reductiebonCode – alfabetisch omgekeerde volgorde. (De originele lijst van reductiebonnen is gewijzigd.)
+````
+public void sorteerReductiebonnen() {
+		reductiebonLijst.sort(Comparator.comparing(Reductiebon::getPercentage)
+				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode).reversed()));
 }
 ````
