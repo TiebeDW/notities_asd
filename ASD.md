@@ -271,6 +271,14 @@ class BowlingGameTest {
 
 ![Class Diagram Reductiebonnen](images/CD_Reductie.png)
 
+Gemakzuchtige statische fabrieksmethoden op de List, Set en Map interfaces laten je eenvoudig niet wijzigbare lijsten, sets en maps maken. Een verzameling wordt als niet wijzigbaar beschouwd als elementen niet kunnen worden toegevoegd, verwijderd of vervangen.
+```java
+public List<Reductiebon> getReductiebonLijst() {
+	//return reductiebonLijst;
+	return Collections.unmodifiableList(reductiebonLijst);
+}
+```
+
 #### Vraag 1:  
 Methode geefReductiebonCodes: een lijst van reductiebonCodes wordt teruggegeven waarvan de percentage hoger ligt dan het meegegeven percentage.
 ````java
@@ -287,6 +295,201 @@ Methode sorteerReductiebonnen: sorteer de lijst met reductiebonnen volgens oplop
 ````java
 public void sorteerReductiebonnen() {
 		reductiebonLijst.sort(Comparator.comparing(Reductiebon::getPercentage)
-				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode).reversed()));
+				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode)
+				.reversed()));
 }
 ````
+
+#### Vraag 3:
+Methode geefGemPercVanBonnenInToekomst: geef het gemiddelde percentage terug van alle reductiebonnen die in de toekomst liggen (ter info: huidige datum: LocalDate.now() ).
+````java
+// VRAAG3
+public double geefGemPercVanBonnenInToekomst() {
+	return reductiebonLijst.stream() //Stream van reductiebonnen
+			.filter(bon -> bon.getEinddatum().isAfter(LocalDate.now()))
+			.mapToInt(Reductiebon::getPercentage) // IntStream
+			.average().getAsDouble();
+}
+````
+
+#### Vraag 4:
+Methode geefUniekeEinddatums: geef alle unieke einddatums terug (m.a.w. geen dubbels), gesorteerd in stijgende volgorde.
+```java
+// VRAAG4
+public List<LocalDate> geefUniekeEinddatums() {
+	return reductiebonLijst.stream()
+			.map(Reductiebon::getEinddatum)
+			.sorted()
+			.distinct()
+			.collect(Collectors.toList());
+}
+```
+
+#### Vraag 5:
+Bekijk deze klasse en pas aan. Er is nog een encapsulatie lek.
+```java
+public Collection<Sporter> getSportersLijst() {
+	return Collections.unmodifiableCollection(sportersLijst);
+}
+```
+
+#### Vraag 6:
+Methode geefEenSporterMetGegevenReductiebon: geeft een willekeurige sporter terug die de gegeven reductiebon bevat. Indien geen sporter aanwezig, dan wordt null teruggegeven.
+```java
+public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
+	return sportersLijst.stream()
+			.filter(sporter -> sporter.getReductiebonLijst().contains(bon)) //Stream<Sporters>
+			.findAny() //Optional<Sporter>
+			.orElse(null); 
+}
+```
+
+#### Extra vraag 1
+Methode geefAlleReductiebonnenMetKortingsPercentageX: geeft een lijst van alle Reductiebonnen met die één van de meegegeven kortingspercentages hebben.
+Opgelet: Testmethode uncomment + aanvullen resultaatSet (ophalen uit bonnen)
+```java
+public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integer> kortingspercentage) {
+	return sportersLijst.stream()
+			.map(Sporter::getReductiebonLijst)
+			.flatMap(Collection::stream)
+			.filter(bon -> kortingspercentage.contains(bon.getPercentage()))
+			.collect(Collectors.toList());
+}
+```
+```java
+@Test
+public void testVraagExtra1_reductiebonnenMetKorting() {
+	// TODO	uncomment
+	List<Reductiebon> bonnen = sporterBeheerder.geefAlleReductiebonnenMetKortingsPercentageX(List.of(10, 40));
+
+	Set<String> resultaat = //TODO verzamel dereductieboncodes in een Set
+		bonnen.stream().map(Reductiebon::getReductiebonCode)
+		.collect(Collectors.toSet());
+		
+	Set<String> verwachteResultaat = new HashSet<>(Arrays.asList("R31", "R34", "R36", "R322"));
+	//Assertions.assertEquals(verwachteResultaat, resultaat);
+}
+```
+
+#### Extra vraag 2
+Methode verwijderAlleSportersMetReductiebonMetPercX : zal alle sporters uit de originele lijst verwijderen die als korting het meegegeven percentage hebben.
+Opgelet: Testmethode uncomment
+```java
+public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
+	sportersLijst.removeIf(s -> s.getReductiebonLijst().stream()
+			.anyMatch(bon -> bon.getPercentage()== perc));	
+}
+```
+
+## Map
+
+
+## Design Patterns
+
+### Strategy Pattern
+Het Strategy Patterndefinieert een familie algoritmen, isoleert ze en maakt ze uitwisselbaar. Strategy maakt het mogelijk om het algoritme los van de client die deze gebruikt, te veranderen.
+
+#### Waarom
+Indien het gedrag varieert, dan halen we het eruit. 
+
+#### Voorbeeld
+Eenden: niet alle eenden vliegen op dezelfde manier. Sommige vliegen niet. Het vlieggedrag varieert, dus we halen het eruit.
+
+#### Stappen
+1. Maak een interface, zet het gedrag erin
+2. Maak de implementatieklassen. Zet het gedrag erin. Stippenlijn tekenen
+3. De client klasse bevat de interface: pijl tekenen naar de interface
+4. In de client klasse schrijven we
+   1. De injectie: we kiezen hier bv voor een setter injectie
+   2. Het gedrag
+
+#### UML
+![Strategy pattern](images/UML_Strategy.png)
+
+#### Code
+```java
+//STAP 1
+public interface FlyBehavior {
+   public String fly();
+}
+```
+```java
+//STAP 2
+public class FlyNoWay implements FlyBehavior{
+   @Override
+   public String fly() {
+      return "Ik kan niet vliegen";
+   }
+}
+```
+```java
+public class Duck {
+   //STAP 3
+   private FlyBehavior flyBehavior;
+   
+   //STAP4
+   public void setFlyBehavior(FlyBehavior flyBehavior) {
+      this.flyBehavior = flyBehavior;
+   }
+   
+   public String performFly() {
+      return flyBehavior.fly();
+   }//einde stap 4
+}  
+```
+### Oefening Strategy pattern
+#### Opgave 
+
+- Het spel draait rond een held
+- Een held kan wapens gebruiken om aan te vallen. De verschillende wapens zijn: mes, geweer en handen. hij kan ook vechten met zijn handen, vandaar dat het ook als wapen kan worden beschouwd.
+- Indien hij noch mes of geweer heeft, dan vecht hij met zijn handen. 
+- Een held kan slechts één wapen tegelijk gebruiken.
+- Een held kan tijdens het spel van wapen veranderen.
+- Het resultaat van een aanval is afhankelijk van het gebruikte wapen.
+
+Maak voor deze opgave een klassendiagram
+Maak ook een voorbeeldimplementatie in Java
+
+#### Ontwerp
+![CD_Held](images/CD_Held.png)
+
+#### Code
+
+```java
+public class Held {
+
+	private Wapens wapen;
+	
+	public Held() {
+		wapen = new Handen();
+	}
+
+	public void valAan() {
+		wapen.valAan();
+	}
+
+	public void setWapen(Wapens wapen) {
+		if (wapen!=null) {
+			this.wapen = wapen;
+		} else {
+			this.wapen = new Handen();
+		}
+	}
+}
+
+```
+```java
+public interface Wapens {
+
+	void valAan();
+}
+```
+```java
+//Dit is hetzelfde voor Mes en handen
+public class Geweer implements Wapens {
+
+	public void valAan() {
+		System.out.println("Schiet!");
+	}
+}
+```
