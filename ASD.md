@@ -265,6 +265,161 @@ class BowlingGameTest {
 }
 ```
 
+## Mockito
+
+![PDF oefenining](extras/Mockito_oefening.pdf)
+
+### Oplossing
+De testen klassen
+```java
+package domein;
+
+import persistentie.PersistentieController;
+
+public class ContinentService {
+
+	private static final int PER_1000_INWONERS = 1000;
+	
+	private PersistentieController persistentieController; //STAP1
+	
+	public ContinentService () { // STAP3
+		this(new PersistentieController());
+	}
+	
+	public ContinentService(PersistentieController persistentieController) { //STAP3
+		this.persistentieController = persistentieController;
+	}
+
+	public double geefGeboorteOverschot(String continent) {
+		if (continent == null || continent.isBlank()) {
+			throw new IllegalArgumentException("continent moet ingevuld zijn");
+		}
+		//PersistentieController persistentieController = new PersistentieController(); //STAP4
+		long aantalInwoners = persistentieController.findAantalBewoners(continent);
+		if (aantalInwoners <= 0) {
+			throw new IllegalArgumentException("geen inwoners gevonden voor gegeven continent");
+		}
+
+		long aantalSterfgevallen = persistentieController.findSterfteCijfer(continent);
+		long aantalGeboorten = persistentieController.findGeboortecijfers(continent);
+		if(aantalSterfgevallen<0|| aantalGeboorten<0) {
+			throw new IllegalArgumentException();
+		}
+
+		double geboortecijfer = (double) aantalGeboorten / aantalInwoners * PER_1000_INWONERS;
+		double sterftecijfer = (double) aantalSterfgevallen / aantalInwoners * PER_1000_INWONERS;
+
+		return geboortecijfer - sterftecijfer;
+	}
+}
+```
+
+Testklasse
+```java
+package testen;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
+import domein.ContinentService;
+import persistentie.PersistentieController;
+
+@ExtendWith(MockitoExtension.class)
+class ContinentServiceTest {
+	@Mock
+	private PersistentieController persistentController;
+	@InjectMocks
+	private ContinentService continentService;
+	
+	private static final String CODE = "Code";
+	
+	@Test
+	public void testGeboorteOverschot() {
+		//trainen
+		dummyTrainen(16405399L, 184634L, 135136L);
+		//assert en controle
+		controle(3.01);
+	}
+	
+	@Test
+	public void testSterfteOverschot() {
+		dummyTrainen(18506500L, 277597L, 333117L);
+		controle(-3);
+	}
+	
+	private void dummyTrainen(long aantalInwoners, long aantalGeboorten, long aantalStergevallen) {
+		
+		Mockito.lenient().when(persistentController.findAantalBewoners(CODE)).thenReturn(aantalInwoners);
+		Mockito.lenient().when(persistentController.findGeboortecijfers(CODE)).thenReturn(aantalGeboorten);
+		Mockito.lenient().when(persistentController.findSterfteCijfer(CODE)).thenReturn(aantalStergevallen);
+	}
+	
+	private void controle(double verwachteResultaat) {
+		double geboorteOverschot = continentService.geefGeboorteOverschot(CODE);
+		Assertions.assertEquals(verwachteResultaat, geboorteOverschot, 0.01);
+		Mockito.verify(persistentController).findAantalBewoners(CODE);
+		Mockito.verify(persistentController).findGeboortecijfers(CODE);
+		Mockito.verify(persistentController).findSterfteCijfer(CODE);
+	}
+	
+	//100% cover
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = " ")
+	public void legeSpatieNullContinent(String continent) {
+		Assertions.assertThrows(IllegalArgumentException.class, 
+				() -> continentService.geefGeboorteOverschot(continent));
+	}
+	
+	//CSVsource werkt niet met long constante vb 123L
+	//dus method source
+	private static Stream<Arguments> opsommingOngeldigeWaarden(){
+		return Stream.of(
+				Arguments.of(0L, 100L, 100L), 
+				Arguments.of(-1L, 100L, 100L),
+				Arguments.of(100L, -1L, 100L),
+				Arguments.of(100L, 100L, -1L));
+	}
+	
+	@ParameterizedTest
+	@MethodSource("opsommingOngeldigeWaarden")
+	public void ongeldigeWaarden(long aantalInwoners, long aantalGeboorten, long aantalStergevallen) {
+		dummyTrainen(aantalInwoners, aantalGeboorten, aantalStergevallen);
+		Assert.assertThrows(IllegalArgumentException.class, 
+				() -> continentService.geefGeboorteOverschot(CODE));
+	}
+
+	private static Stream<Arguments> randWaarden(){
+		return Stream.of(
+				Arguments.of(1L, 15L, 14L, 1000.0), 
+				Arguments.of(30000L, 0L, 15020L, -500.66),
+				Arguments.of(30000L, 15020L, 0L, 500.66),
+				Arguments.of(1L, 0L, 0L, 0));
+	}
+	@ParameterizedTest
+	@MethodSource("randWaarden")
+	public void geldigeWaarden(long aantalInwoners, long aantalGeboorten, long aantalStergevallen, double verwachtResultaat) {
+		dummyTrainen(aantalInwoners, aantalGeboorten, aantalStergevallen);
+		controle(verwachtResultaat);
+	}
+}
+```
+
 ## Collections
 
 ### Reductiebonnen
