@@ -538,6 +538,217 @@ public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
 
 ## Map
 
+```Java
+class Auteur {
+
+    private String naam, voornaam;
+
+    public Auteur(String naam, String voornaam) {
+        setNaam(naam);
+        setVoornaam(voornaam);
+    }
+
+    public String getNaam() {
+        return naam;
+    }
+
+    public String getVoornaam() {
+        return voornaam;
+    }
+
+    public void setNaam(String naam) {
+        this.naam = naam;
+    }
+
+    public void setVoornaam(String voornaam) {
+        this.voornaam = voornaam;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s %s", naam, voornaam);
+    }
+}
+
+public class OefMap_opgave {
+    public OefMap_opgave() {
+        // we zullen een hashmap gebruiken waarbij auteursid de sleutel is en
+        // de waarde is naam en voornaam van Auteur.
+        //Creëer de lege hashMap "auteursMap"; de sleutel is van type Integer, de waarde van type Auteur
+        //----------------------------------------------------------------------------------
+        Map<Integer, Auteur> auteursMap = new HashMap<>();
+        
+        //Voeg toe aan de hashmap: auteursID = 9876, naam = Gosling, voornaam = James
+        //Voeg toe aan de hashmap: auteursID = 5648, naam = Chapman, voornaam = Steve
+        //-------------------------------------------------------------------------------
+        auteursMap.put(9876, new Auteur("Gosling", "James"));
+        auteursMap.put(5648, new Auteur("Chapman", "Steve"));
+        
+        //Wijzig de voornaam van Chapman: John ipv Steve
+        //----------------------------------------------
+        auteursMap.get(5648).setVoornaam("John");
+        
+        //Komt de auteursID 1234 voor in de hashmap
+        //-----------------------------------------
+        if (auteursMap.containsKey(1234))
+		System.out.println("auteursID 1234 komt voor\n");
+        else
+		System.out.println("auteursID 1234 komt niet voor\n");
+         
+        //Toon de naam en voornaam van auteursID 5648
+        //-------------------------------------------
+        
+		Auteur auteur = auteursMap.get(5648);
+		if (auteur != null)
+			System.out.println(auteur);
+         
+        toonAlleAuteurs(auteursMap);
+
+        //Alle auteursID's worden in stijgende volgorde weergegeven.
+        //  1) de hashMap kopiëren naar een treeMap (= 1 instructie)
+        //  2) roep de methode toonAlleSleutels op.
+        //---------------------------------------------------------------
+        Map<Integer, Auteur> treeMap = new TreeMap<>();
+        toonAlleAuteurs(auteursMap);
+        
+    }
+
+    public void toonAlleSleutels(Map<Integer, Auteur> map) {
+        //Alle sleutels van de map worden op het scherm weergegeven.
+        //---------------------------------------------------------------
+    	map.keySet().forEach(System.out::println);
+        System.out.println();
+    }
+
+    public void toonAlleAuteurs(Map<Integer, Auteur> map) {
+        /*Alle gegevens van de map worden op het scherm weergegeven.
+		Per lijn wordt een auteursnr, naam en voornaam weergegeven.*/
+        //---------------------------------------------------------------
+    	//NIET ZO -> OVERKILL
+    	//map.entrySet().stream().forEach(entry -> System.out.printf("%d %s%n", entry.getKey(), entry.getValue()));
+        map.forEach((auteursId, auteur) -> System.out.printf("%d %s%n",auteursId, auteur));
+    	System.out.println();
+    }
+
+    public static void main(String args[]) {
+        new OefMap_opgave();
+    }
+}
+```
+```Java
+class CollectionOperaties {
+    
+    //methode verwijderOpLetter
+    //-------------------------
+	public static boolean verwijderOpLetter(List<String> list, char c) {
+		return list.removeIf(elem -> elem.charAt(0)==c);
+	}
+
+    //methode verwijderSequence
+    //-------------------------
+	public static boolean verwijderSequence(List<String> list, String grens) {
+		int first = list.indexOf(grens);
+		if (first==-1) {
+			return false;
+		}
+		int last = list.lastIndexOf(grens);
+		list.subList(first, last).clear();
+		return true;
+		
+	}
+
+	//uitbreiding opgave Fruit   addOrdered
+	//-------------------------------------
+	public static boolean addOrdered(List<String> list, String fruit) {
+		int index = Collections.binarySearch(list, fruit);
+		if(index>=0) {
+			return false;
+		}
+		list.add(index*-1,fruit);
+		return true;
+	}
+}
+
+public class OefFruit_opgave {
+
+    public static void main(String args[]) {
+        String kist[][] = {{"appel", "peer", "citroen", "kiwi", "perzik"},
+        {"banaan", "mango", "citroen", "kiwi", "zespri", "pruim"},
+        {"peche", "lichi", "kriek", "kers", "papaya"}};
+
+        List<String> list = Stream.of(kist).flatMap(Arrays::stream).collect(Collectors.toList());
+        String mand[];
+
+        //Toon de inhoud van de array "kist"
+        //----------------------------------
+        System.out.println(Arrays.deepToString(kist));
+        
+        //Voeg de verschillende kisten samen in een ArrayList list.
+        //--------------------------------------------------------
+
+
+        CollectionOperaties.verwijderOpLetter(list, 'p');
+        System.out.println("na verwijder letter ('p') :  " + list + "\n");
+
+        CollectionOperaties.verwijderSequence(list, "kiwi");
+        System.out.println("na verwijder sequence (kiwi) : " + list + "\n");
+        
+        //UITBREIDING
+        list.sort(null);
+        CollectionOperaties.addOrdered(list, "sapodilla");
+
+        //Plaats het resultaat terug in een array mand en sorteer die oplopend.
+        //---------------------------------------------------------------------
+        mand = list.toArray(new String[0]);
+        Arrays.sort(mand);
+
+        //Toon de inhoud van de array "mand"
+        //----------------------------------
+        System.out.println(Arrays.toString(mand));
+    }
+}
+```
+```Java
+public class OefFruitMap_opgave {
+
+    public static void main(String args[]) {
+        String kist[][] = {{"appel", "peer", "citroen", "kiwi", "perzik"},
+        {"banaan", "mango", "citroen", "kiwi", "zespri", "pruim"},
+        {"peche", "lichi", "kriek", "kers", "papaya"}};
+
+        List<String> list = Stream.of(kist).flatMap(Arrays::stream).collect(Collectors.toList());
+        Scanner in = new Scanner(System.in);
+
+        //declaratie + creatie map
+        //------------------------------
+        Map<String, Double> fruitMap = new TreeMap<>();
+                            
+        /*Berg de fruit list van vorige oefeningen in een boom
+        op zodat dubbels ge�limineerd worden.
+        Er moet ook de mogelijkheid zijn de bijhorende prijs
+        (decimale waarde) bij te houden.*/
+        //------------------------------------------------------------
+        list.forEach(fruit -> fruitMap.put(fruit, null));
+        
+        /*Doorloop de boom in lexicaal oplopende volgorde en vraag
+        telkens de bijhorende prijs, die je mee in de boom opbergt.*/
+        //------------------------------------------------------------
+        //fruitMap.forEach(...);
+        fruitMap.entrySet().stream().forEach(entry -> {
+        	System.out.printf("Prijs van %s : ", entry.getKey());
+        	double prijs = in.nextDouble();
+        	entry.setValue(prijs);
+        });
+        
+        
+        /*Druk vervolgens de volledige lijst in twee
+        kolommen (naam : prijs) in lexicaal oplopende volgorde af
+        op het scherm.*/
+        //------------------------------------------------------------
+        fruitMap.forEach((fruit, prijs) -> System.out.printf("%s\t%.2f%n", fruit, prijs));       
+    }
+}
+```
 
 ## Design Patterns
 
@@ -647,4 +858,199 @@ public class Geweer implements Wapens {
 		System.out.println("Schiet!");
 	}
 }
+```
+
+### Simple factory pattern
+
+#### UML
+
+![](images/UML_Factory.png)
+
+#### Code
+```Java
+public class PizzaStore {
+
+    private PizzaFactory factory;
+
+    public PizzaStore(PizzaFactory factory) {
+        this.factory = factory;
+    }
+
+    public Pizza orderPizza(String type) {
+        Pizza pizza;
+
+        pizza = factory.createPizza(type);
+
+        //if (pizza != null) {
+            pizza.prepare();
+            pizza.bake();
+            pizza.cut();
+            pizza.box();
+        //}
+        return pizza;
+    }
+}
+```
+```Java
+public class PizzaFactory {
+
+    public Pizza createPizza(String type) {
+
+        return switch (type.toLowerCase()) {
+            case "cheese" ->
+                new CheesePizza();
+            case "pepperoni" ->
+                new PepperoniPizza();
+            case "clam" ->
+                new ClamPizza();
+            case "veggie" ->
+                new VeggiePizza();
+            default ->
+                //null;
+            	new NoPizza();
+        };
+    }
+
+}
+```
+```Java
+public class CheesePizza extends Pizza {
+
+    public CheesePizza() {
+        super("Cheese Pizza", "Regular Crust", "Marinara Pizza Sauce",
+                new ArrayList<>(Arrays.asList(new String[]{
+            "Fresh Mozzarella",
+            "Parmesan"})));
+    }
+
+}
+```
+```Java
+public class NoPizza extends Pizza {
+
+	public NoPizza() {
+		super("No Pizza", "", "", new ArrayList<>());
+	}
+
+	@Override
+	public void prepare() {}
+
+	@Override
+	public void bake() {}
+
+	@Override
+	public void cut() {}
+
+	@Override
+	public void box() {}
+
+	@Override
+	public String toString() {
+		return "";
+	}
+}
+```
+#### Oefening
+
+1) Verbeter het ontwerp: bv.
+```Java
+public MallardDuck(){
+   setQuackBehavior(new Quack());
+   setFlyBehavoir(new FlyWithWings());
+}
+```
+We mogen NIET naar een implementatie programmeren!
+
+Programmeer naar een interface, niet naar een implemntatie.
+
++ testklasse verder aanvullen
+
+```Java
+public class DecoyDuck extends Duck {
+
+    /*public DecoyDuck() {
+        setQuackBehavior(new MuteQuack());
+        setFlyBehavior(new FlyNoWay());
+    }*/
+	
+	public DecoyDuck(QuackBehavior quack, FlyBehavior fly) { //MEEGEVEN --> voor factory
+		super(quack, fly); //NORMAAL GEBRUIK JE DE CTOR VAN DE SUPER, NIET SETTER
+	}
+    
+    @Override
+    public String display() {
+        return "Ik ben een lokeend";
+    }
+
+}
+```
+```Java
+public abstract class Duck {
+
+    private QuackBehavior quackBehavior;
+
+    private FlyBehavior flyBehavior;
+    
+    public Duck(QuackBehavior quack, FlyBehavior fly) {
+    	setFlyBehavior(fly);
+    	setQuackBehavior(quack);
+    }
+    ...
+}
+```
+```Java
+public class DuckFactory {
+
+	public Duck createDuck(DuckSpecies specie) {
+
+		return switch (specie) {
+			case REDHEAD -> new RedheadDuck(new Quack(), new FlyWithWings());
+			case MALLARD -> new MallardDuck(new Quack(), new FlyWithWings());
+			case RUBBER -> new RubberDuck(new Squeak(), new FlyNoWay());
+			case DECOY -> new DecoyDuck(new MuteQuack(), new FlyNoWay());
+		};
+        
+	}
+}
+```
+```Java
+public enum DuckSpecies {
+	DECOY, MALLARD, REDHEAD, RUBBER
+}
+```
+```Java
+class DuckTest {
+    ...
+	
+	private DuckFactory duckFactory;
+	
+	@BeforeEach
+	public void before() {
+		duckFactory = new DuckFactory();
+	}
+	
+	@ParameterizedTest
+	@MethodSource("duckProvider")
+	public void testDuck(DuckSpecies kind, String expectedDisplay, String expectedQuack, String expectedFly) {
+		Duck duck = duckFactory.createDuck(kind);
+		Assertions.assertEquals(expectedDisplay, duck.display());
+		Assertions.assertEquals(expectedQuack, duck.performQuack());
+		Assertions.assertEquals(expectedFly, duck.performFly());
+	}
+	
+	...
+}
+```
+
+2) Voeg het vlieggedrag "FlyRocketPowered" toe
+
+Toon aan dat je het gedrag dynamisch kan wijzigen (testklasse verder aanvullen).
+```Java
+        @ParameterizedTest
+	@MethodSource("duckProvider")
+	public void wijzigAtRuntime(DuckSpecies kind) {
+		Duck duck = duckFactory.createDuck(kind);
+		duck.setFlyBehavior(new FlyRocketPowered());
+		Assertions.assertEquals(flyRocketPowered, duck.performFly());
+	}
 ```
