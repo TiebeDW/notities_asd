@@ -1054,3 +1054,120 @@ Toon aan dat je het gedrag dynamisch kan wijzigen (testklasse verder aanvullen).
 		Assertions.assertEquals(flyRocketPowered, duck.performFly());
 	}
 ```
+
+### State pattern
+
+#### Theorie
+
+#### Oefening
+
+##### Opdracht
+Een document wordt enkel bewaard indien nodig: wanneer wijzigingen werden aangebracht.
+Indien er wijzigingen werden aangebracht en het document werd nog niet bewaard -> toestand ‘Dirty’
+Indien het document werd bewaard en er werden geen wijzigingen meer aangebracht -> toestand ‘Clean’
+
+##### Code
+
+### Design patterns door elkaar
+
+#### Oefening 1
+
+![](images/DP_oef1.png)
+
+##### Oplossing
+
+![](images/DP_oef1_opl.png)
+
+```java
+public class ScrollBar extends VisualDecorator {
+
+	public void draw() {
+		System.out.println("scrollbar");
+		visualComponent.draw();
+	}
+
+	public ScrollBar(VisualComponent visualComponent) {
+		super(visualComponent);
+	}
+}
+```
+
+```java
+public class Border extends VisualDecorator {
+
+	private int width;
+
+	public void draw() {
+		System.out.printf("kader van %d dik%n", width);
+		visualComponent.draw();
+	}
+
+	public Border(VisualComponent visualComponent, int width) {
+		super(visualComponent);
+		this.width=width;
+	}
+}
+```
+
+```java
+public interface VisualComponent {
+
+	void draw();
+}
+```
+
+```java
+public abstract class VisualDecorator implements VisualComponent {
+
+	protected VisualComponent visualComponent;
+
+	public VisualDecorator(VisualComponent visualComponent) {
+		this.visualComponent = visualComponent;
+	}
+}
+```
+
+```java
+public class TextView implements VisualComponent {
+
+	public void draw() {
+		System.out.println("textview");
+	}
+}
+```
+
+```java
+public class main {
+
+	public static void main(String[] args) {
+		VisualComponent textView = new TextView();
+		textView.draw();
+		VisualComponent textView2 = new ScrollBar(new Border(new TextView(), 10));
+		textView2.draw();
+	}
+
+}
+```
+
+#### Oefening 2
+
+![](images/DP_oef2.png)
+
+##### Oplossing
+![](images/DP_oef2_opl.png)
+
+#### Oefening 6
+
+![PDF oefenining](extras/oef6_opgave.pdf)
+
+##### Oplossing
+
+![](images/DP_oef6_opl.png)
+![](images/DP_oef6_opl2.png)
+
+#### Oefening 7
+
+![](images/DP_oef7.png)
+
+##### Oplossing 
+![](images/DP_oef7_opl.png)
