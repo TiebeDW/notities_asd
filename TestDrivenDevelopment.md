@@ -1,19 +1,140 @@
 # Test Driven Development
 
---------------------------------------------
 protected = is private + subklasses toegang geven, package access
 
-# Junit
+## Junit
 
-## Oefening 1
+### Oefening Weegschaal
+
+#### Opgave
+
+![img.png](images/Weegschaal.png)
+
+Je schrijft de test voor je een klasse implementeert.
+
+#### Code
+Domeinklasse
+```java
+package domein;
+
+import java.math.BigInteger;
+
+public class Weegschaal {
+
+	private BigInteger gewicht = BigInteger.ZERO;
+
+	public BigInteger getGewicht() {
+		return this.gewicht;
+	}
+
+	public void vermeerder(BigInteger nieuwGewicht) {
+		if (nieuwGewicht == null || nieuwGewicht.signum() < 0)
+			throw new IllegalArgumentException("ongeldige waarde");
+		gewicht = gewicht.add(nieuwGewicht);
+	}
+}
+```
+Testklasse
+```java
+package testen;
+
+import java.math.BigInteger;
+
+import org.junit.jupiter.api.Assertions;
+//static wegdoen zorgt ervoor dat je assertions wel moet schrijven, 
+//indien hij er wel staat moet je ze niet schrijven
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import domein.Weegschaal;
+
+class WeegschaalTest {
+
+	private Weegschaal weegschaal;
+
+	@BeforeEach
+	public void before() { // de naam van de methode mag je zelf kiezen
+		weegschaal = new Weegschaal();
+	}
+
+	@Test
+	public void gewichtVermeerderen() {
+		BigInteger gewicht = new BigInteger("15");
+		// Weegschaal weegschaal = new Weegschaal();
+		weegschaal.vermeerder(gewicht);
+		Assertions.assertEquals(gewicht, weegschaal.getGewicht());
+	}
+
+	@Test
+	public void nieuweWeegschaalGeeftGewichtNul() {
+		// Weegschaal weegschaal = new Weegschaal();
+		Assertions.assertEquals(BigInteger.ZERO, weegschaal.getGewicht());
+	}
+
+	@Test
+	public void gewichtVermeerderenMetNegatieveWaarde() {
+		BigInteger gewicht = new BigInteger("-20");
+		Assertions.assertThrows(IllegalArgumentException.class, () -> weegschaal.vermeerder(gewicht));
+	}
+
+	@Test
+	public void gewichtVermeerderenMetNull() {
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			weegschaal.vermeerder(null);
+		});
+	}
+}
+```
+
+### Parameterized Test
+Een test meerdere keren uitvoeren met verschillende paramters.  
+Bv: We gaan volgende klasse testen
+```java
+package domain;
+public class Calculator {
+    public double add(double a, double b) {
+        return a+b;
+    }
+}
+```
+We voorzien enkele testgevallen:  
+1 + 1 = 2  
+2,5 + 1 = 3,5  
+3,1 + 1,1 = 4,2
+
+```java 
+package testen;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import domein.Calculator;
+
+class CalculatorTest {
+    private Calculator calculator;
+
+    @BeforeEach
+    public void before() {
+        calculator = new Calculator();
+    }
+
+    @ParameterizedTest
+    @CsvSource({"2.0, 1.0, 1.0", "3.5, 2.5, 1.0", "4.2, 3.1, 1.1"}) //csv=comma-separated values
+    public void add(double expected, double valueOne, double valueTwo) {
+        Assertions.assertEquals(expected, calculator.add(valueOne, valueTwo), 0);
+    }
+}
+```
+
+### Oefening 1
 ![](images/CD_Herhaling_Oef1.png)
 
-### Opgave:
+#### Opgave:
 
 Formaat: 3cijfers-7cijfers-2cijfers  
 De rest van de deling eerste tien cijfers door 97 moet gelijk zijn aan de twee laatste cijfers.
 
-### Code:
+#### Code:
 Domeinklasse:
 ```java
 package domein;
@@ -91,9 +212,9 @@ class RekeningTest {
 }
 ```
 
-## Oefening Bowling
+### Oefening Bowling
 
-### Opgave
+#### Opgave
 
 ![](images/Bowling.png)  
 The game consists of 10 frames as shown above.  In each frame the player hastwo opportunities to knock down 10 pins.  The score for the frame is the totalnumber of pins knocked down, plus bonuses for strikes and spares.  
@@ -107,10 +228,10 @@ Write a class named "BowlingGame" that has two methods:
 
 Create a class **BowlingGame** and test **BowlingGameTest**
 
-### Ontwerp:
+#### Ontwerp:
 ![Class Diagram Bowling](images/CD_OefeningBowling.png)
 
-### Code
+#### Code
 Domeinklasse:
 ```java
 package domain;
@@ -245,15 +366,15 @@ class BowlingGameTest {
 }
 ```
 
-# Mockito
+## Mockito
 
-## Oefening 
+### Oefening 
 
-### Opgave
+#### Opgave
 
 ![PDF oefenining](extras/Mockito_oefening.pdf)
 
-### Oplossing
+#### Oplossing
 De testen klassen
 ```java
 package domein;
