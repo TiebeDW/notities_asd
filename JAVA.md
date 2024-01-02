@@ -8,7 +8,9 @@
 
 ![Class Diagram Reductiebonnen](images/CD_Reductie.png)
 
-Gemakzuchtige statische fabrieksmethoden op de List, Set en Map interfaces laten je eenvoudig niet wijzigbare lijsten, sets en maps maken. Een verzameling wordt als niet wijzigbaar beschouwd als elementen niet kunnen worden toegevoegd, verwijderd of vervangen.
+### Reductiebonbeheerder
+Gemakzuchtige statische fabrieksmethoden op de List, Set en Map interfaces laten je eenvoudig niet wijzigbare lijsten, sets en maps maken. Een verzameling wordt als niet wijzigbaar beschouwd als elementen niet kunnen worden toegevoegd, verwijderd of vervangen.  
+Omzetten naar een niet-wijzigbare lijst
 ```java
 public List<Reductiebon> getReductiebonLijst() {
 	//return reductiebonLijst;
@@ -16,53 +18,54 @@ public List<Reductiebon> getReductiebonLijst() {
 }
 ```
 
-### Vraag 1:
+#### Vraag 1:
 Methode geefReductiebonCodes: een lijst van reductiebonCodes wordt teruggegeven waarvan de percentage hoger ligt dan het meegegeven percentage.
 ````java
 public List<String> geefReductiebonCodes(int percentage) {
     return reductiebonLijst.stream()
-        .filter(r -> r.getPercentage()>percentage)
+        .filter(bon -> bon.getPercentage() > percentage)
         .map(Reductiebon::getReductiebonCode)
         .collect(Collectors.toList());
 }
 ````
 
-### Vraag 2:
+#### Vraag 2:
 Methode sorteerReductiebonnen: sorteer de lijst met reductiebonnen volgens oplopende percentage (van laag naar hoog), en bij gelijke percentage op reductiebonCode – alfabetisch omgekeerde volgorde. (De originele lijst van reductiebonnen is gewijzigd.)
-````java
+```java
 public void sorteerReductiebonnen() {
 		reductiebonLijst.sort(Comparator.comparing(Reductiebon::getPercentage)
 				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode)
 				.reversed()));
 }
-````
+```
+Als er gevraagd werd, maak een nieuwe gesorteerde lijst dan moet er .stream().sorted() staan.
 
-### Vraag 3:
+#### Vraag 3:
 Methode geefGemPercVanBonnenInToekomst: geef het gemiddelde percentage terug van alle reductiebonnen die in de toekomst liggen (ter info: huidige datum: LocalDate.now() ).
-````java
-// VRAAG3
+```java
 public double geefGemPercVanBonnenInToekomst() {
 	return reductiebonLijst.stream() //Stream van reductiebonnen
-			.filter(bon -> bon.getEinddatum().isAfter(LocalDate.now()))
-			.mapToInt(Reductiebon::getPercentage) // IntStream
-			.average().getAsDouble();
+				.filter(bon -> bon.getEinddatum().isAfter(LocalDate.now()))
+				.mapToDouble(Reductiebon::getPercentage)
+				.average().getAsDouble();
 }
-````
+```
 
-### Vraag 4:
+#### Vraag 4:
 Methode geefUniekeEinddatums: geef alle unieke einddatums terug (m.a.w. geen dubbels), gesorteerd in stijgende volgorde.
 ```java
-// VRAAG4
 public List<LocalDate> geefUniekeEinddatums() {
 	return reductiebonLijst.stream()
 			.map(Reductiebon::getEinddatum)
-			.sorted()
-			.distinct()
+			.sorted().distinct()
 			.collect(Collectors.toList());
 }
 ```
 
-### Vraag 5:
+### Sporterbeheerder
+```java
+
+#### Vraag 5:
 Bekijk deze klasse en pas aan. Er is nog een encapsulatie lek.
 ```java
 public Collection<Sporter> getSportersLijst() {
@@ -70,7 +73,7 @@ public Collection<Sporter> getSportersLijst() {
 }
 ```
 
-### Vraag 6:
+#### Vraag 6:
 Methode geefEenSporterMetGegevenReductiebon: geeft een willekeurige sporter terug die de gegeven reductiebon bevat. Indien geen sporter aanwezig, dan wordt null teruggegeven.
 ```java
 public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
@@ -81,9 +84,8 @@ public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
 }
 ```
 
-### Extra vraag 1
+#### Extra vraag 1
 Methode geefAlleReductiebonnenMetKortingsPercentageX: geeft een lijst van alle Reductiebonnen met die één van de meegegeven kortingspercentages hebben.
-Opgelet: Testmethode uncomment + aanvullen resultaatSet (ophalen uit bonnen)
 ```java
 public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integer> kortingspercentage) {
 	return sportersLijst.stream()
@@ -93,27 +95,13 @@ public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integ
 			.collect(Collectors.toList());
 }
 ```
-```java
-@Test
-public void testVraagExtra1_reductiebonnenMetKorting() {
-	// TODO	uncomment
-	List<Reductiebon> bonnen = sporterBeheerder.geefAlleReductiebonnenMetKortingsPercentageX(List.of(10, 40));
 
-	Set<String> resultaat = //TODO verzamel dereductieboncodes in een Set
-		bonnen.stream().map(Reductiebon::getReductiebonCode)
-		.collect(Collectors.toSet());
-		
-	Set<String> verwachteResultaat = new HashSet<>(Arrays.asList("R31", "R34", "R36", "R322"));
-	//Assertions.assertEquals(verwachteResultaat, resultaat);
-}
-```
-
-### Extra vraag 2
+#### Extra vraag 2
 Methode verwijderAlleSportersMetReductiebonMetPercX : zal alle sporters uit de originele lijst verwijderen die als korting het meegegeven percentage hebben.
 Opgelet: Testmethode uncomment
 ```java
 public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
-	sportersLijst.removeIf(s -> s.getReductiebonLijst().stream()
+	sportersLijst.removeIf(sporter -> sporter.getReductiebonLijst().stream()
 			.anyMatch(bon -> bon.getPercentage()== perc));	
 }
 ```
