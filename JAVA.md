@@ -107,7 +107,23 @@ public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
 ```
 
 ## MAP
+![Overzicht Collectionframework](images/overzichtCollectionFramework.png)
+HashMap<K,V> en Hashtable<K,V> zijn implentatie-klassen van Map.  
+TreeMap<K,V> is een implementatie-klasse van SortedMap.  
+De klasse properties is een subklasse van HashTable<K,V>  
 
+**Implementaties van interface Map<K,V>:**
+- HashMap<K,V>
+  - Elementen opgeslagen in een hash-tabel
+- Hashtable<K,V>
+  - Zoals HashMap maar verouderde versie.
+  - Werpt een NullPointerException indien de sleutel of value null is. 
+- TreeMap<K,V>
+  - Elementen opgeslagen in boomstructuur
+  - Implementatie van SortedMap subinterface van Map. Gebruik de natuurlijke volgorde of een comparator. 
+
+![HashMapVoorbeeld](images/HashMapVoorbeeld.png)
+![VbHashMapWerknemers](images/vbHashMapWerknemers.png)
 ```Java
 class Auteur {
 
@@ -252,6 +268,8 @@ public class OefFruit_opgave {
         //Toon de inhoud van de array "kist"
         //----------------------------------
         System.out.println(Arrays.deepToString(kist));
+        //Arrays.toString werkt voor 1 dim array
+        
         
         //Voeg de verschillende kisten samen in een ArrayList list.
         //--------------------------------------------------------
