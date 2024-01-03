@@ -4,6 +4,28 @@ protected = is private + subklasses toegang geven, package access
 
 ## Junit
 
+### Verschillende soorten sources
+1. **CsvSource**: Meerdere primititieve datatypes (meerdere params)
+```java
+@CsvSource({"0.0, 1.0, 2,0"})
+```
+2. **Valuesource**: Enkele primitief datatype (enkele param)
+```java
+@ValueSource(strings = {" ", "a", "A"})
+```
+3. **MethodSource**: Objecten
+```java
+private static Stream<Arguments> addFixture() {
+    return Stream.of(
+        Arguments.of(new int[]{5},5),
+        Arguments.of(new int[]{2,3}, 5),
+        Arguments.of(new int[]{5,6,9}, 5)
+    );
+}
+
+@MethodSource("addFixture")
+```
+
 ### Oefening Weegschaal
 
 #### Opgave
@@ -367,6 +389,221 @@ class BowlingGameTest {
 ```
 
 ## Mockito
+![img.png](images/Mockito_dependencies.png)  
+Klasse A roept een methode van klasse B op. Klasse A is dependent op klasse B  
+**Probleem**: Geen geisoleerde teset van klasse A  
+**Oplossing**: Mock objecten
+
+**Mock Object**: een softwareobject speciaal gemaakt om de eigenschapen en gedragingen te simuleren van een of meerdere objecten tijdens het testen. 
+
+### Dependency injection
+![img.png](images/Mockito_DependencyInjection.png)
+
+#### Klasse A
+```java
+Public class A {
+    private B b;
+    
+    public A() {
+        this(new BImpl());
+    }
+    
+    public A(B b) {
+        this. b = b;
+    }
+    
+    public void methodeA() {
+        b.methodeB();
+    }
+}
+```
+#### Klasse ATest
+```java 
+class ATest {
+    private A e;
+    
+    @BeforeEach
+    public void before() {
+        a = new A(new BDummy());
+    }
+    
+    @Test
+    public void testMethodeA() {
+        a.methodA;
+    }
+}
+```
+
+### Stappenplan
+#### Refactor van de te testen klasse
+1. Attribuut aanmaken van de dummyklasse (dependency)
+```java
+private Mikey mikey;
+```
+2. Constructor aanmaken met initialisatie
+```java
+public Class() {
+    this(new Mikey());
+}
+```
+3. Constructor aanmaken met injectie
+```java
+public Class(Mikey mikey) {
+    this.mikey = mikey;
+}
+```
+4. Schrap eerdere creatie
+```java
+// Mikey mikey = new Mikey();
+```
+
+#### Opzet testklasse
+1. KLasse annotatie (krijg je op examen)
+```java
+@ExtendWith(MockitoExtension.class)
+public class test {}
+```
+2. Mock declareren
+```java
+@Mock
+private Mikey mikeyMock;
+```
+3. Mock injecteren
+```java
+@InjectMocks
+private Class class;
+```
+
+#### Opbouw mockito test
+1. Juiste source kiezen dmv te bepalen welke params er moeten meegegeven worden
+2. Welke resultaten verwachten we? (meegeven met params)
+3. Mock trainen
+```java
+Mockito.when(mikeyMock.method()).thenReturn(param);
+```
+4. Te testen methode uitvoeren
+```java
+Class class = class.method();
+```
+5. Params vergelijken met opgeslagen oplossing
+```java
+Assertions.assertEquals(param, class);
+```
+6. Per getrainde mock een verify
+```java
+Mockito.verify(mikeyMock).method();
+```
+
+#### Mockito.lenient()
+**Mock trainden zonder lenient**: we krijgen een extra controle: de methode van de mock moet minstens één keer opgeroepen worden. 
+**Mock trainen met lenient**: de extra controle ongedaan maken
+### Voorbeeld
+![Mockito voorbeeld](images/Mockito_Injection.png)
+De testen klasse
+```java
+package persistentie;
+
+import domein.Land;
+
+public class PersistentieController {
+
+   private LandMapper landMapper;
+   private ContinentMapper continentMapper;
+
+    public Land findLand(String code) {
+        loadLandMapper();
+        return landMapper.findLand(code);
+    }
+
+    public int findOppervlakteAlleLanden() {
+        loadLandMapper();
+        return landMapper.findOppervlakteAlleLanden();
+    }
+
+    public long findAantalBewoners(String continent) {
+        loadContinentMapper();
+        return continentMapper.findAantalBewoners(continent);
+    }
+
+    public long findGeboortecijfers(String continent) {
+        loadContinentMapper();
+        return continentMapper.findGeboortecijfers(continent);
+    }
+
+    public long findSterfteCijfer(String continent) {
+        loadContinentMapper();
+        return continentMapper.findSterfteCijfer(continent);
+    }
+
+    private void loadLandMapper() {
+        if (landMapper == null) {
+            landMapper = new LandMapper();
+        }
+    }
+
+    private void loadContinentMapper() {
+        if (continentMapper == null) {
+            continentMapper = new ContinentMapper();
+        }
+    }
+}
+```
+Testklasse
+```java
+@ExtendWith(MockitoExtension.class)
+class LandServiceTest {
+
+	@Mock
+	private PersistentieController persistentieControllerDummy;
+
+	@InjectMocks
+	private LandService landService;
+
+	private static final int oppervlakte = 110;
+
+	@ParameterizedTest
+	@CsvSource({ "BE, 10, 0.1", "NL, 22, 0.2", "DE, 78, 0.7" })
+	public void testGeefLandStatistiekScenario(String landCode, int landOppervlakte, double verwachteResultaat) {
+		Mockito.when(persistentieControllerDummy.findLand(landCode)).thenReturn(new Land(landCode, landOppervlakte));
+
+		Mockito.when(persistentieControllerDummy.findOppervlakteAlleLanden()).thenReturn(oppervlakte);
+
+		LandStatistiek stat = landService.geefLandStatistiek(landCode);
+
+		Assertions.assertEquals(landCode, stat.landCode());
+
+		Assertions.assertEquals(verwachteResultaat, stat.verhouding(), 0.01);
+
+		Mockito.verify(persistentieControllerDummy).findLand(landCode);
+		Mockito.verify(persistentieControllerDummy).findOppervlakteAlleLanden();
+
+	}
+
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = { "        " })
+	public void lege_spaties_nullCode(String landCode) {
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			landService.geefLandStatistiek(landCode);
+		});
+	}
+
+	@Test
+	public void landBestaatNiet() {
+		final String CODE_GEEN_LAND = "GEEN_LAND";
+		Mockito.when(persistentieControllerDummy.findLand(CODE_GEEN_LAND)).thenReturn(null);
+		Mockito.lenient().when(persistentieControllerDummy.findOppervlakteAlleLanden()).thenReturn(100);
+
+		Assertions.assertNull(landService.geefLandStatistiek(CODE_GEEN_LAND));
+
+		Mockito.verify(persistentieControllerDummy).findLand(CODE_GEEN_LAND);
+
+		Mockito.verify(persistentieControllerDummy,
+		Mockito.times(0)).findOppervlakteAlleLanden();
+
+	}
+}
+```
 
 ### Oefening 
 
@@ -387,7 +624,7 @@ public class ContinentService {
 	
 	private PersistentieController persistentieController; //STAP1
 	
-	public ContinentService () { // STAP3
+	public ContinentService () { // STAP2
 		this(new PersistentieController());
 	}
 	
@@ -421,17 +658,6 @@ public class ContinentService {
 
 Testklasse
 ```java
-package testen;
-
-import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.stream.Stream;
-
-import ...
-
-import domein.ContinentService;
-import persistentie.PersistentieController;
-
 @ExtendWith(MockitoExtension.class)
 class ContinentServiceTest {
 	@Mock
