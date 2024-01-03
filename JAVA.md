@@ -119,6 +119,7 @@ De klasse properties is een subklasse van HashTable<K,V>
   - Zoals HashMap maar verouderde versie.
   - Werpt een NullPointerException indien de sleutel of value null is. 
 - TreeMap<K,V>
+  - Gesorteerd
   - Elementen opgeslagen in boomstructuur
   - Implementatie van SortedMap subinterface van Map. Gebruik de natuurlijke volgorde of een comparator. 
 
