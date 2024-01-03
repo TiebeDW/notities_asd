@@ -127,8 +127,18 @@ public class Geweer implements Wapens {
 
 ## Simple factory pattern
 
-### UML
+### Waarom
+We willen de object creatie isoleren. We maken een factory klasse die object creatie afhandelt.
 
+### Voorbeeld
+Sommige pizza's zijn anders gemaakt. Je kan er verschillende toevoegen, wijzijgen of verwijderen zonder veel code te wijzgen.
+
+### Stappen
+1. Maak een factory klasse
+2. Voeg een create method toe aan deze klasse. Deze returnt een object
+3. De klasse die de factory gebruikt opnieuw bewerken
+
+### UML
 ![](images/UML_Factory.png)
 
 ### Code
@@ -226,7 +236,7 @@ public MallardDuck(){
 ```
 We mogen NIET naar een implementatie programmeren!
 
-Programmeer naar een interface, niet naar een implemntatie.
+Programmeer naar een interface, niet naar een implementatie. 
 
 + testklasse verder aanvullen
 
@@ -285,13 +295,26 @@ public enum DuckSpecies {
 ```
 ```Java
 class DuckTest {
-    ...
-	
+    private final static String FLY_NO_WAY = "Ik kan niet vliegen";
+	private final static String FLY_WITH_WINGS = "Ik vlieg!!";
+	private final static String QUACK = "Ik kwaak";
+	private final static String SQUEAK = "Piep";
+	private final static String MUTE_QUACK = "<<Stilte>>";
+
+	private final String flyRocketPowered = "Ik vlieg met raketaandrijving";
+
 	private DuckFactory duckFactory;
 	
 	@BeforeEach
 	public void before() {
 		duckFactory = new DuckFactory();
+	}
+
+	private static Stream<Arguments> duckProvider() {
+		return Stream.of(Arguments.of(MALLARD, "Ik ben een echte wilde eend", QUACK, FLY_WITH_WINGS),
+				Arguments.of(RUBBER, "Ik ben een badeend", SQUEAK, FLY_NO_WAY),
+				Arguments.of(REDHEAD, "Ik lijk op een roodkuifeend", QUACK, FLY_WITH_WINGS),
+				Arguments.of(DECOY, "Ik ben een lokeend", MUTE_QUACK, FLY_NO_WAY));
 	}
 	
 	@ParameterizedTest
@@ -302,7 +325,6 @@ class DuckTest {
 		Assertions.assertEquals(expectedQuack, duck.performQuack());
 		Assertions.assertEquals(expectedFly, duck.performFly());
 	}
-	
 	...
 }
 ```
