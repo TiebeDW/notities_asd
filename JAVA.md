@@ -1,7 +1,5 @@
 # JAVA 
 
-------------------------------------
-
 # Collections & streams
 
 ## Reductiebonnen
@@ -125,6 +123,8 @@ De klasse properties is een subklasse van HashTable<K,V>
 
 ![HashMapVoorbeeld](images/HashMapVoorbeeld.png)
 ![VbHashMapWerknemers](images/vbHashMapWerknemers.png)
+
+### Java_Map_Oefeningen_start
 ```Java
 class Auteur {
 
@@ -335,6 +335,39 @@ public class OefFruitMap_opgave {
         op het scherm.*/
         //------------------------------------------------------------
         fruitMap.forEach((fruit, prijs) -> System.out.printf("%s\t%.2f%n", fruit, prijs));       
+    }
+}
+```
+
+### Java_Oefeningen2_start
+#### Opgave
+![Map oefeningen 2](images/Map_Oef2.png)
+![Map oefeningen 2 Opgave](images/Map_Oef2Opgave.png)
+#### Code
+```java 
+public class BierWinkel {
+
+    private final List<Bier> bieren;
+    private PersistentieController pc = new PersistentieController();
+
+    public BierWinkel() {
+        bieren = pc.inlezenBieren("bieren.txt");
+    }
+    
+    //OEF
+    public Map<String, Bier> opzettenOverzichtBierPerNaam() {
+    	return bieren.stream().collect(Collectors.toMap(Bier::getNaam, Function.identity()));
+    }
+    
+    //OEF
+    public Map<String, List<Bier>> opzettenOverzichtBierenPerSoort() {
+    	//return bieren.stream().collect(Collectors.groupingBy(Bier::getSoort));
+    	return bieren.stream().collect(Collectors.groupingBy(Bier::getSoort, TreeMap::new, Collectors.toList()));
+    }
+
+    //OEF
+    public Map<String, Long> opzettenAantalBierenPerSoort() {
+    	return bieren.stream().collect(Collectors.groupingBy(Bier::getSoort, TreeMap::new, Collectors.counting()));
     }
 }
 ```
