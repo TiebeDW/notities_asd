@@ -34,6 +34,8 @@ Eenden: niet alle eenden vliegen op dezelfde manier. Sommige vliegen niet. Het v
 
 ### UML
 ![Strategy pattern](images/UML_Strategy.png)
+Volledige UML
+![img.png](images/DP_DuckVolledig.png)
 
 ### Code
 ```java
@@ -66,17 +68,17 @@ public class Duck {
    }//einde stap 4
 }  
 ```
+
 ### Oefening Strategy pattern
 #### Opgave
-
 - Het spel draait rond een held
-- Een held kan wapens gebruiken om aan te vallen. De verschillende wapens zijn: mes, geweer en handen. hij kan ook vechten met zijn handen, vandaar dat het ook als wapen kan worden beschouwd.
-- Indien hij noch mes of geweer heeft, dan vecht hij met zijn handen.
-- Een held kan slechts één wapen tegelijk gebruiken.
-- Een held kan tijdens het spel van wapen veranderen.
+- Een held kan wapens gebruiken om aan te vallen. De verschillende wapens zijn: **mes**, **geweer** en **handen**. hij kan ook vechten met zijn handen, vandaar dat het ook als wapen kan worden beschouwd.
+- Indien hij noch mes of geweer heeft, dan vecht hij met zijn **handen**.
+- Een held kan slechts **één wapen** tegelijk gebruiken.
+- Een held kan tijdens het spel van **wapen veranderen**.
 - Het resultaat van een aanval is afhankelijk van het gebruikte wapen.
 
-Maak voor deze opgave een klassendiagram
+Maak voor deze opgave een klassendiagram  
 Maak ook een voorbeeldimplementatie in Java
 
 #### Ontwerp
