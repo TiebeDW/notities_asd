@@ -371,3 +371,413 @@ public class BierWinkel {
     }
 }
 ```
+```java 
+public class DomeinController {
+
+	private final BierWinkel bierWinkel;
+
+	public DomeinController() {
+		bierWinkel = new BierWinkel();
+	}
+
+	public String opzettenBierPerNaam() {
+		/*
+		 * return bierWinkel.opzettenOverzichtBierPerNaam().entrySet().stream()
+		 * .map(entry -> String.format("%s = %s", entry.getKey(), entry.getValue()))
+		 * .collect(Collectors.joining("\n"));
+		 */
+		return overzichtToString(bierWinkel.opzettenOverzichtBierenPerSoort());
+	}
+
+	public String opzettenAantalBierenPerSoort() {
+		/*
+		 * return bierWinkel.opzettenAantalBierenPerSoort().entrySet().stream()
+		 * .map(entry -> String.format("%s = %s", entry.getKey(), entry.getValue()))
+		 * .collect(Collectors.joining("\n"));
+		 */
+		return overzichtToString(bierWinkel.opzettenAantalBierenPerSoort());
+	}
+
+	public String opzettenOverzichtBierenPerSoort() {
+		/*
+		 * return bierWinkel.opzettenOverzichtBierenPerSoort().entrySet().stream()
+		 * .map(entry -> String.format("%s = %s", entry.getKey(), entry.getValue()))
+		 * .collect(Collectors.joining("\n"));
+		 */
+		return overzichtToString(bierWinkel.opzettenOverzichtBierenPerSoort());
+	}
+
+	// TODO na hoofdstuk generics
+	// --> generieke oplossing "overzichtToString" methode
+	//
+	private <K, V> String overzichtToString(Map<K, V> map) {
+		return map.entrySet().stream().map(entry -> String.format("%s = %s", entry.getKey(), entry.getValue()))
+				.collect(Collectors.joining("\n"));
+	}
+
+}
+```
+
+## Generics
+  - Alle generieke methoden hebben een **"type paramter section"**, dat tussen < en > staat.  
+  - Elke **"type paramter section"** bevat één of meer **"(formal) type parameters"**, gescheiden door komma's
+  - Een **"type parameter"** kan enkel referenties bevatten, geen primitieve datatypes!
+```java 
+public static < E >void printArray( E[]inputArray){
+    Stream.of(inputArray).forEach(
+      element -> System.out.printf("%s ", element));System.out.println();
+}
+```
+- De generieke methode 'printArray' heeft als **"type parameter section"** <E>
+- ...
+
+### Oefeningen
+#### Generieke methoden
+```java
+public class Generieke_methoden_opgave {
+
+    public static void main(String args[]) {
+        new Generieke_methoden_opgave();
+    }
+
+    public Generieke_methoden_opgave() {
+        Double[] decGetallen = {3.0, 7.8, 9.0, 10.6};
+        List<Double> doubleLijst = new ArrayList<>(Arrays.asList(decGetallen));
+
+        Integer[] integer = {5, 8, 9, -6, 0, 7};
+        List<Integer> integerLijst = new ArrayList<>(Arrays.asList(integer));
+
+        String[] woorden = {"aaa", "bbb", "ccc", "ddd", "eee", "fff", "ggg", "hhh", "a"};
+        List<String> stringLijst = new ArrayList<>(Arrays.asList(woorden));
+
+//methode minimum oproepen
+        Integer minGetal1 = minimum(integerLijst);
+        Double minGetal2 = minimum(doubleLijst);
+
+        System.out.printf("%s%d\n\n", "oplossing is -6, jouw oplossing = ", minGetal1);
+        System.out.printf("%s%.1f\n\n", "oplossing is 3.0, jouw oplossing = ", minGetal2);
+
+//methode geefAlleElementenKleinerDan oproepen
+        List<Integer> lijstInteger = geefAlleElementenKleinerDan(integerLijst, 8);
+        List<String> lijstString = geefAlleElementenKleinerDan(stringLijst, "ddd");
+
+        weergevenLijst("oplossing : 5 -6 0 7", lijstInteger);
+        weergevenLijst("oplossing : aaa bbb ccc a", lijstString);
+
+    }
+
+    public <E> void weergevenLijst(String oplossing, Collection<E> lijst) {
+
+        System.out.printf("%s\n%s", oplossing, "            ");
+        lijst.forEach(element -> System.out.printf("%s ", element));
+        System.out.println("\n");
+    }
+
+    //------------------------------------------------------------------------
+    //Schrijf de generieke methode "minimum" die het kleinste getal van een Collection
+    //van type E teruggeeft.
+    //------------------------------------------------------------------------
+    public <E extends Comparable<E>> E minimum(Collection<E> lijst) {
+    	return lijst.stream().min(E::compareTo).get();
+    }
+    
+    
+    //-------------------------------------------------------------------------------------
+    //Schrijf de generieke methode geefAlleElementenKleinerDan
+    //De methode heeft twee argumenten: een Collection van type E "lijst" en een element van type E "grens"
+    //De methode geeft een List van type E terug; alle elementen van "lijst" die kleiner
+    //zijn dan "grens" worden in de lijst bewaard.
+    //-------------------------------------------------------------------------------------
+    public <E extends Comparable<E>> List<E> geefAlleElementenKleinerDan(Collection<E> lijst, E grens){
+    	return lijst.stream().filter(element -> element.compareTo(grens)<0).collect(Collectors.toList());
+    }
+}
+```
+#### Generieke klasse
+```java 
+//Gegeven:
+
+abstract class Dier {
+}
+
+interface Huisdier {
+}
+
+class Hond extends Dier implements Huisdier {
+}
+
+class Kat extends Dier implements Huisdier {
+}
+
+class Leeuw extends Dier {
+}
+
+//Gevraagd:
+//schrijf een klasse die een set van Kat, Hond of Huisdier kan bevatten
+class VerzamelingHuisdier<E extends Huisdier>
+{
+	//attribuut "huisdieren" = set van Kat, Hond of Huisdier
+	//--------------------------------------------------------------------------
+	private Set<E> huisdieren = new HashSet<>();
+	
+    //getHuisdieren
+	//-------------------
+	public Set<E> getHuisdieren(){
+		return Collections.unmodifiableSet(huisdieren);
+	}
+
+    //methode add: een dier toevoegen in de set
+	//------------------------------------------------------------
+	public void add(E dier) {
+		huisdieren.add(dier);
+	}
+}
+
+class Tools {
+	//methode bevatHuisdier met twee argumenten: een huisdier en een set van Kat, Hond of Huisdier.
+	//Geeft true terug indien het huisdier in de set voorkomt, anders false.
+	//schrijf de static methode bevatHuisdier d.m.v. wildcards
+	//---------------------------------------------------------------------------------------
+	public static boolean bevatHuisdier(Huisdier huisdier, Set<? extends Huisdier> setHuisdieren) {
+		return setHuisdieren.contains(huisdier);
+	}
+	
+	//schrijf de static methode bevatHuisdier2 d.m.v. generieke methode
+	//---------------------------------------------------------------------------------------
+	public static <T extends Huisdier> boolean bevatHuisdier2(T huisdier, Set<? extends Huisdier> setHuisdieren ) {
+		return setHuisdieren.contains(huisdier);
+	}
+	
+	//schrijf de static methode geefAantal. 1 argument: Een set van Kat, Dier, Huisdier of Object.	
+	//Aantal elementen van de set wordt teruggegeven.
+	//---------------------------------------------------------------------------------------	
+	public static int geefAantal(Set<? super Kat> dier) {
+		return dier.size();
+	}
+}
+
+public class Generieke_klasse_opgave {
+
+    public static void main(String args[]) {
+        Kat kat = new Kat();
+        Hond hond = new Hond();
+        Huisdier huisdier = new Hond();
+
+        VerzamelingHuisdier<Kat> katten = new VerzamelingHuisdier<>();
+        katten.add(kat);
+        VerzamelingHuisdier<Hond> honden = new VerzamelingHuisdier<>();
+
+        VerzamelingHuisdier<Huisdier> huisdieren = new VerzamelingHuisdier<>();
+        huisdieren.add(huisdier);
+
+        boolean komtVoor = Tools.bevatHuisdier(kat, katten.getHuisdieren());
+        System.out.printf("correct = true;  %s%n", komtVoor);
+        komtVoor = Tools.bevatHuisdier(hond, honden.getHuisdieren());
+        System.out.printf("correct = false;  %s%n", komtVoor);
+        komtVoor = Tools.bevatHuisdier(huisdier, huisdieren.getHuisdieren());
+        System.out.printf("correct = true;  %s%n", komtVoor);
+        //compileerfout: komtVoor = Tools.bevatHuisdier(kat, new HashSet<Dier>());
+
+        komtVoor = Tools.bevatHuisdier2(kat, katten.getHuisdieren());
+        System.out.printf("correct = true;  %s%n", komtVoor);
+        komtVoor = Tools.bevatHuisdier2(hond, honden.getHuisdieren());
+        System.out.printf("correct = false;  %s%n", komtVoor);
+        komtVoor = Tools.bevatHuisdier2(huisdier, huisdieren.getHuisdieren());
+        System.out.printf("correct = true;  %s%n", komtVoor);
+        
+        int aantalKatten = Tools.geefAantal(katten.getHuisdieren());
+        int aantalHuisdieren = Tools.geefAantal(huisdieren.getHuisdieren());
+       //compileerfout: int aantalHonden = Tools.geefAantal(honden.getHuisdieren());
+        
+        Set<Dier> dieren = Set.of(new Leeuw(), new Hond());
+        int aantalDieren = Tools.geefAantal(dieren);
+        
+        int aantalObjecten = Tools.geefAantal(new HashSet<Object>());
+        
+        System.out.printf("correct = 1;  %d%ncorrect = 1;  %d%ncorrect = 2;  %d%ncorrect = 0;  %d%n", aantalKatten, 
+        		aantalHuisdieren, aantalDieren, aantalObjecten);
+     }
+
+}
+```
+### Oefeningen 2
+![GenericsOef2](images/Generics_oef2.png)
+![GenericsOef2Opgave](images/GenericsOef2Opgave.png)
+Implements Serializable plaatsen
+```java 
+public class Bier implements Serializable{
+
+    private String bierNaam;
+    private double alcohol;
+
+    public Bier(String bierNaam, double alcohol) {
+        this.bierNaam = bierNaam;
+        this.alcohol = alcohol;
+    }
+
+    public String getBierNaam() {
+        return bierNaam;
+    }
+
+    public void setBierNaam(String bierNaam) {
+        this.bierNaam = bierNaam;
+    }
+
+    public double getAlcohol() {
+        return alcohol;
+    }
+
+    public void setAlcohol(double alcohol) {
+        this.alcohol = alcohol;
+    }
+}
+```
+```java
+public class Node<T extends Serializable> implements Serializable{
+
+    private final T data;
+    private Node<T> next;
+
+    public Node(T data) {
+        this.data = data;
+    }
+
+    public T getData() {
+        return data;
+    }
+
+    public void setNext(Node<T> next) {
+        this.next = next;
+    }
+
+    public Node<T> getNext() {
+        return next;
+    }
+}
+```
+```java 
+public class MyListIterable<T extends Serializable> implements Iterable<T>, Serializable {
+    
+    private Node<T> firstNode;
+    private Node<T> lastNode;
+    private String nameList;
+
+    public MyListIterable() {
+        this("List");
+    }
+
+    public MyListIterable (String name) {
+        nameList = name;
+    }
+
+    public boolean isEmpty() {
+        return firstNode == null;
+    }
+
+    @Override
+    public String toString() {
+        if (isEmpty()) {
+            return nameList + " is empty";
+        }
+
+        StringBuilder buffer = new StringBuilder();
+        buffer.append("The ").append(nameList).append(" is: ");
+
+        this.forEach(elem -> buffer.append(elem).append(" "));
+        return buffer.toString();
+    }
+
+    public void insertAtFront(T data) {
+        Node<T> aNode = new Node<>(data);
+        if (isEmpty()) {
+            firstNode = lastNode = aNode;
+        } else {
+            aNode.setNext(firstNode);
+            firstNode = aNode;
+        }
+    }
+
+    public void insertAtBack(T data) {
+        Node<T> aNode = new Node<>(data);
+        if (isEmpty()) {
+            firstNode = lastNode = aNode;
+        } else {
+            lastNode.setNext(aNode);
+            lastNode = lastNode.getNext();
+        }
+    }
+
+    public T removeFromFront() throws EmptyListException {
+        if (isEmpty()) {
+            throw new EmptyListException(nameList);
+        }
+
+        T removedItem = firstNode.getData();
+        if (firstNode == lastNode) {
+            firstNode = lastNode = null;
+        } else {
+            firstNode = firstNode.getNext();
+        }
+
+        return removedItem;
+    }
+
+    @Override
+    public Iterator<T> iterator() {
+        return new MyIterator();
+    }
+   
+    private class MyIterator implements Iterator<T> {
+        
+        private Node<T> nextToFetch = firstNode;
+
+        @Override
+        public boolean hasNext() {
+        	return nextToFetch != null;
+        }
+
+        @Override
+        public T next() {
+            T data = nextToFetch.getData();
+            nextToFetch = nextToFetch.getNext();
+            return data; 
+        }
+    }
+}
+```
+```java
+public class MyStack<T extends Serializable> implements Serializable {
+
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L; //Wordt automatisch gegeneerd
+	private MyListIterable<T> list;
+
+    public MyStack() {
+        this("Stack");
+    }
+
+    public MyStack(String name) {
+        list = new MyListIterable<>(name);
+    }
+
+    public void push(T data) {
+        list.insertAtFront(data);
+    }
+
+    public T pop() {
+        return list.removeFromFront();
+    }
+
+    public boolean isEmpty() {
+        return list.isEmpty();
+    }
+
+    @Override
+    public String toString() {
+        return list.toString();
+    }
+
+}
+```
