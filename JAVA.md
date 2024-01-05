@@ -781,3 +781,83 @@ public class MyStack<T extends Serializable> implements Serializable {
 
 }
 ```
+```java
+public class TestStackGeneriek {
+
+	private MyStack<String> woordenStack;
+	private MyStack<Double> decGetallenStack;
+
+	@BeforeEach
+	public void before() {
+		woordenStack = new MyStack<>("woordenStack");
+		decGetallenStack = new MyStack<>("decimaleGetallenStack");
+	}
+
+	...
+	
+	@Test
+	public void toevoegenVerwijderenTesten() {
+		String[] woorden = {"lekker", "zijn", "wafels"};
+		Double[] decGetallen = {12.5, 24.3, 30.5, 40.5};
+		itemsToevoegenVerwijderen(woordenStack, woorden);
+		itemsToevoegenVerwijderen(decGetallenStack, decGetallen);
+	}
+
+	//public void itemsToevoegenVerwijderen(MyStack myStack,     items){
+
+	//----------------------------------------------------------------------------
+	public <E extends Serializable> void itemsToevoegenVerwijderen(MyStack<E> myStack, E[] items) {
+		Stream.of(items).forEach(myStack::push);
+		
+		List<E> listExpected = Arrays.asList(items);
+		Collections.reverse(listExpected);
+		
+		listExpected.stream().limit(listExpected.size()-1).forEach(expected -> {
+			Assertions.assertEquals(expected, myStack.pop());
+			Assertions.assertFalse(myStack.isEmpty());
+		});
+		
+		Assertions.assertEquals(listExpected.get(listExpected.size() -1), myStack.pop());
+		Assertions.assertTrue(myStack.isEmpty());
+	}
+	
+	...
+
+```
+```java 
+public class PersistentieController {
+
+   private BierMapper bierMapper;
+
+    public List<Bier> leesBieren(File besnaam) {
+        if (bierMapper == null) {
+            bierMapper = new BierMapper();
+        }
+        return bierMapper.leesBieren(besnaam);
+    }
+     
+    //TODO stap 3, maak de methode generiek
+    public <T extends Serializable> void persisteerObject(T object, File besnaam) {
+        try (ObjectOutputStream out = new ObjectOutputStream(Files.newOutputStream(besnaam.toPath()))) {
+            out.writeObject(object);
+        } catch (IOException ex) {
+            Logger.getLogger(BierMapper.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+}
+```
+```java
+public class DomeinController {
+    
+    private PersistentieController pc = new PersistentieController();
+    
+    public void persisteerBierGegevensAlsObject(String tekstFileNaam, String objectFileNaam){    
+    	//TODO zie stap3
+        List<Bier> lijstBier = pc.leesBieren(new File(tekstFileNaam));
+        MyListIterable<Bier> myList = new MyListIterable<>();
+        lijstBier.forEach(myList::insertAtBack);
+        pc.persisteerObject(myList, new File(objectFileNaam));
+    }
+    
+}
+```
