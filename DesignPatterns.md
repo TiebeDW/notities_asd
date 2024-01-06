@@ -342,19 +342,6 @@ Toon aan dat je het gedrag dynamisch kan wijzigen (testklasse verder aanvullen).
 	}
 ```
 
-## State pattern
-
-### Theorie
-
-### Oefening
-
-### Opdracht
-Een document wordt enkel bewaard indien nodig: wanneer wijzigingen werden aangebracht.
-Indien er wijzigingen werden aangebracht en het document werd nog niet bewaard -> toestand ‘Dirty’
-Indien het document werd bewaard en er werden geen wijzigingen meer aangebracht -> toestand ‘Clean’
-
-#### Code
-
 ## Observer Pattern
 
 ### Waarom
@@ -669,6 +656,216 @@ public class ZipReader extends ReaderDecorator {
 
 	public String read() {
 		return String.format("zip %s", reader.read());
+	}
+}
+```
+
+## State Pattern
+
+### Waarom
+Een object dat verschillende toestanden heeft wordt snel complex als je de toestand als variabele bijhoudt. Daarom maak je voor het object een abstracte toestandsklasse en de verschillende toestanden zijn klassen deze extenden.
+
+### Voorbeeld
+Een kauwgumbalautomaat heeft verschillende toestanden(hasQuarter, hasNoQuarter, outOfGumballs, Sold...). Je klasse is slecht uitbreidbaar als je deze toestanden steeds als variabelen zou bijhouden. 
+
+### Stappen
+1. Maak een nieuwe abstracte toestandsklasse met alle methodes die je nodig hebt. 
+2. Maak alle verschillende toestanden als klasse die erven van de toestandsklasse
+3. Pas het origineel object aan.
+
+### UML
+#### State machine diagram
+![DP_StateMachineDiagram](images/DP_StateMachineDiagram.png)
+#### Class diagram
+![DP_State](images/DP_State.png)
+
+### Code
+```java 
+//STAP 1
+abstract class GumballMachineState {
+    protected final GumballMachine gumballMachine;
+
+    public GumballMachineState(GumballMachine gumballMachine) {
+        this.gumballMachine = gumballMachine;
+    }
+
+    public String insertQuarter() {
+        return "You can't insert a quarter";
+    }
+
+    public String ejectQuarter() {
+        return "You haven't inserted a quarter";
+    }
+
+    public String turnCrank() {
+        return "You can't turn";
+    }
+
+    public String dispense() {
+        return "You need to pay first";
+    }
+}
+```
+Idem voor HasQuarter, OutOfGumballsState, SoldState, WinnerState:
+```java 
+//STAP 2
+class NoQuarterState extends GumballMachineState {
+
+    public NoQuarterState(GumballMachine gumballMachine) {
+        super(gumballMachine);
+    }
+
+    @Override
+    public String insertQuarter() {
+        gumballMachine.toState(new HasQuarterState(gumballMachine));
+        return "You inserted a quarter";
+    }
+
+    @Override
+    public String toString() {
+        return "waiting for quarter";
+    }
+}
+```
+```java
+public class GumballMachine {
+	   
+	private GumballMachineState currentState;
+	private int count = 0;
+
+	public GumballMachine(int numberGumballs) {
+		this.count = numberGumballs;
+		if (numberGumballs > 0) {
+			toState(new NoQuarterState(this));
+		} else {
+			toState(new OutOfGumballsState(this));
+		}
+	}
+
+	public String insertQuarter() {
+		return currentState.insertQuarter();
+	}
+
+	public String ejectQuarter() {
+		return currentState.ejectQuarter();
+	}
+
+	public String turnCrank() {
+		String msg1 = currentState.turnCrank();
+		String msg2 = currentState.dispense();
+		return String.format("%s\n%s", msg1, msg2);
+	}
+
+	protected String releaseBall() {
+		if (count != 0) {
+			count--;
+		}
+		return "A gumball comes rolling out the slot...";
+	}
+
+	public int getCount() {
+		return count;
+	}
+
+	public void refill(int count) {
+		this.count = count;
+		toState(new NoQuarterState(this));
+	}
+
+	protected void toState(GumballMachineState state) {
+		currentState = state;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder result = new StringBuilder();
+		result.append("\nMighty Gumball, Inc.");
+		result.append("\nJava-enabled Standing Gumball Model");
+		result.append(String.format("%nInventory: %d gumball", count));
+		if (count != 1) {
+			result.append("s");
+		}
+		result.append("\n");
+		result.append(String.format("Machine is %s %n", currentState));
+		return result.toString();
+	}
+}
+```
+
+#### Oefening
+Een document wordt enkel bewaard indien nodig: wanneer wijzigingen werden aangebracht.
+Indien er wijzigingen werden aangebracht en het document werd nog niet bewaard -> toestand ‘Dirty’
+Indien het document werd bewaard en er werden geen wijzigingen meer aangebracht -> toestand ‘Clean’
+
+![DP_StateOef](images/DP_StateOef.png)
+![DP_StateOefDiagram](images/DP_StateOefDiagram.png)
+
+```java 
+public abstract class FileState {
+
+	protected final FileEditor fileEditor;
+
+	public boolean save() {
+		return false;
+	}
+
+	public boolean edit() {
+		return false;
+	}
+
+	public FileState(FileEditor fileEditor) {
+		this.fileEditor=fileEditor;
+	}
+}
+```
+```java
+public class FileEditor {
+
+    private final File file;
+
+    private FileState currentState;
+
+	public FileEditor(File file) {
+        this.file = file;
+        toState(new CleanState(this));
+    }
+
+	public boolean save() {
+		return currentState.save();
+	}
+
+	public boolean edit() {
+		return currentState.edit();
+	}
+
+	void toState(FileState fileState) {
+		currentState = fileState;
+	}
+}
+```
+```java 
+public class CleanState extends FileState {
+	
+	public CleanState(FileEditor fileEditor) {
+		super(fileEditor);
+	}
+
+	public boolean edit() {
+		fileEditor.toState(new DirtyState(fileEditor));
+		return true;
+	}
+}
+```
+```java 
+public class DirtyState extends FileState {
+	
+	public DirtyState(FileEditor fileEditor) {
+		super(fileEditor);
+	}
+
+	public boolean save() {
+		fileEditor.toState(new CleanState(fileEditor));
+		return true;
 	}
 }
 ```
