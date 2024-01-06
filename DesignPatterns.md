@@ -355,6 +355,325 @@ Indien het document werd bewaard en er werden geen wijzigingen meer aangebracht 
 
 #### Code
 
+## Observer Pattern
+
+### Waarom
+Wanneer we willen dat bij een update van een bepaald opbject, andere objecten ook geüpdated worden.
+
+### Voorbeeld
+We meten de temperatuur, luchtvochtigheid en de luchtdruk en geven ze wveer op het scherm. Deze veranderen constant en bij elke verandering moeten de schermen geüpdated worden. Subject = weatherData, observer = schermen.
+
+### Stappen
+1. Maak de interfaces Subject, Observer en DisplayElement aan.
+2. Geef aan de observer ook de paramters die hij moet observeren
+3. Maak de concrete subject klasse aan, deze implementeert subject en voeg de methodes addObserver, removeObserver en notifyObserver toe. De observers worden hier in een set opgeslagen. 
+4. Maak de schermelementen aan, deze implementeren observer en displayElement. Zij hebben een update en een display methode. In de constructor wordt het observerObject overgedragen aan het object. 
+
+### UML
+![UML observer](images/UML_ObserverDomein.png)
+![img.png](images/UML_ObserverGui.png)
+
+### Code
+```java
+//STAP 1
+public interface Subject {
+
+    public void addObserver(Observer observer);
+
+    public void removeObserver(Observer observer);
+}
+public interface Observer {
+   //STAP 2
+    public void update(double temp, double humidity, double pressure);
+}
+package gui;
+
+public interface DisplayElement {
+
+    public void display();
+}
+
+```
+```java 
+//STAP 3
+public class WeatherData implements Subject {
+
+    private double temperature, humidity, pressure;
+
+    private Set<Observer> observers;
+
+    public WeatherData() {
+        observers = new HashSet<>();
+    }
+
+    public double getHumidity() {
+
+        return humidity;
+    }
+
+    public double getPressure() {
+        return pressure;
+    }
+
+    public double getTemperature() {
+        return temperature;
+    }
+
+    public void setMeasurements(double temperature, double humidity, double pressure) {
+        this.temperature = temperature;
+        this.humidity = humidity;
+        this.pressure = pressure;
+        notifyObservers();
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    private void notifyObservers() {
+        observers.forEach(observer
+                -> observer.update(temperature, humidity, pressure));
+    }
+}
+```
+```java 
+//STAP 4
+public class CurrentConditionsDisplay implements Observer, DisplayElement {
+
+    private Subject weatherData;
+    private double temperature, humidity;
+
+    public CurrentConditionsDisplay(Subject weatherData) {
+        this.weatherData = weatherData;
+        weatherData.addObserver(this);
+    }
+
+    public void update(double temp, double humidity, double pressure) {
+        this.temperature = temp;
+        this.humidity = humidity;
+        display();
+    }
+
+    public void display() {
+        System.out.printf("Actuele weergesteldheid %.1f graden en %.1f %% luchtvochtigheid\n",
+                temperature, humidity);
+    }
+}
+```
+```java 
+public class ForecastDisplay implements Observer, DisplayElement {
+
+    private double currentPressure = 29.92f;
+    private double lastPressure;
+    private Subject subject;
+
+    public ForecastDisplay(Subject subject) {
+        this.subject = subject;
+        subject.addObserver(this);
+    }
+
+    public void update(double temp, double humidity, double pressure) {
+        lastPressure = currentPressure;
+        currentPressure = pressure;
+
+        display();
+    }
+
+    public void display() {
+        System.out.print("Weersverwachting: ");
+        if (currentPressure > lastPressure) {
+            System.out.println("Beter weer op komst!");
+        } else if (currentPressure == lastPressure) {
+            System.out.println("Meer van hetzelfde");
+        } else if (currentPressure < lastPressure) {
+            System.out.println("Koeler, regenachtig weer op komst");
+        }
+    }
+}
+```
+```java 
+public class StatisticsDisplay implements Observer, DisplayElement {
+
+    private double maxTemp = 0.0f;
+    private double minTemp = 200;
+    private double tempSum = 0.0f;
+    private int numReadings;
+    private Subject subject;
+
+    public StatisticsDisplay(Subject subject) {
+        this.subject = subject;
+        subject.addObserver(this);
+    }
+
+    public void update(double temp, double humidity, double pressure) {
+        tempSum += temp;
+        numReadings++;
+
+        if (temp > maxTemp) {
+            maxTemp = temp;
+        }
+
+        if (temp < minTemp) {
+            minTemp = temp;
+        }
+
+        display();
+    }
+
+    @Override
+    public void display() {
+        System.out.printf("Gem/Max/Min temperature = %.1f/%.1f/%.1f\n",
+                (tempSum / numReadings), maxTemp, minTemp);
+    }
+}
+```
+
+## Decorator Pattern
+
+### Waarom
+We hebben veel mogelijkheden die een bepaald object kan gebruiken, maar we willen ons project niet nodeloos complex maken. Elke decoratie heeft een invloed op het object.
+
+### Voorbeeld
+We runnen een koffieshop, en elke soort drank kan gedecoreerd worden met verschillende items. De prijs is afhankelijk van welke decoraties je erbij neemt.
+
+### Stappen
+1. Maak een abstracte klasse met een abstracte methode
+2. Maak alle hoofdklasses aan, zij extenden telkens de abstracte klasse
+3. Maak een abstracte decorator klasse aan die de eerste abstracte klasse extenden. Protected methode niet vergeten.
+4. Alle decoraties krijgen hun eigen klasse die de decorator klasse extenden. (Deze krijgen ook de abstracte methode van in het begin mee)
+
+### UML
+![UML_Decorator](images/UML_Decorator.png)
+
+### Code
+```java 
+//STAP 1
+public abstract class Beverage {
+
+    private String description = "Unknown Beverage";
+    
+    public String getDescription() {
+        return description;
+    }
+
+    protected void setDescription(String description) {
+        this.description = description;
+    }
+
+    public abstract double cost();
+}
+```
+Zelfde voor DarkRoast, Decaf, Houseblend:
+```java 
+//STAP 2
+public class Espresso extends Beverage {
+
+    public Espresso() {
+        setDescription("Espresso");
+    }
+
+    @Override
+    public double cost() {
+        return 1.99;
+    }
+}
+```
+```java 
+//STAP 3
+public abstract class CondimentDecorator extends Beverage {
+
+    private final Beverage beverage;
+
+    public CondimentDecorator(Beverage beverage) {
+        this.beverage = beverage;
+    }
+
+    protected Beverage getBeverage() {
+        return beverage;
+    }
+
+    @Override
+    public abstract String getDescription();
+}
+```
+Zelfde voor Mocha, Soy, Whip
+```java 
+//STAP 4
+public class Milk extends CondimentDecorator {
+
+    public Milk(Beverage beverage) {
+        super(beverage);
+    }
+
+    @Override
+    public String getDescription() {
+        return getBeverage().getDescription() + ", Milk";
+    }
+
+    @Override
+    public double cost() {
+        return .10 + getBeverage().cost();
+    }
+}
+```
+### Oefening
+![DP_ReaderOef](images/DP_ReaderOef.png)
+
+#### Oplossing
+![UML_ReaderOef](images/UML_ReaderOef.png)
+
+```java
+public abstract class ReaderDecorator implements Reader {
+
+	protected final Reader reader;
+	
+	public ReaderDecorator(Reader reader) {
+		this.reader = reader;
+	}
+}
+```
+```java 
+public class FileReader implements Reader {
+
+	public FileReader(String Filenaam) {
+		
+	}
+
+	public FileReader(File file) {
+		
+	}
+
+	public String read() {
+		return "tekst";
+	}
+}
+```
+```java 
+public interface Reader {
+	public String read();
+}
+```
+Analoog voor encryptedReader:
+```java 
+public class ZipReader extends ReaderDecorator {
+
+	public ZipReader(Reader reader) {
+		super(reader);
+	}
+
+	public String read() {
+		return String.format("zip %s", reader.read());
+	}
+}
+```
+
+
 ## Design patterns door elkaar
 
 ### Oefening 1
