@@ -936,6 +936,140 @@ class Thermometer {
 #### Oplossing
 ![DP_FacadeOefOpl](images/DP_FacadeOefOpl.png)
 
+## Simple factory Functioneel programmeren
+![OefFunctioneelProgrammeren](images/OefFunctioneelProgrammeren.png)
+
+```java 
+package domein;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import static domein.DuckSpecies.*;
+
+public class DuckFactory {
+
+	/*public Duck createDuck(DuckSpecies specie) {
+		return switch (specie) {
+			case REDHEAD -> new RedheadDuck(new Quack(), new FlyWithWings());
+			case MALLARD -> new MallardDuck(new Quack(), new FlyWithWings());
+			case RUBBER -> new RubberDuck(new Squeak(), new FlyNoWay());
+			case DECOY -> new DecoyDuck(new MuteQuack(), new FlyNoWay());
+		};
+	}*/
+	
+	public DuckFactory() {
+		add(REDHEAD, () -> new RedheadDuck(new Quack(), new FlyWithWings()));
+		add(MALLARD, () -> new MallardDuck(new Quack(), new FlyWithWings()));
+		add(RUBBER, () -> new RubberDuck(new Squeak(), new FlyNoWay()));
+		add(DECOY, () -> new DecoyDuck(new MuteQuack(), new FlyNoWay()));
+	}
+	
+	private final Map<DuckSpecies, Supplier<Duck>> factory = new HashMap<>();
+	
+	public final void add(DuckSpecies specie, Supplier<Duck> supplier) {
+		factory.put(specie, supplier);
+	}
+	
+	public Duck createDuck(DuckSpecies specie) {
+		Supplier<Duck> supplier = factory.get(specie);
+		return supplier != null ? supplier.get() : null;
+	}
+}
+```
+#### Volgende oefening
+![FunctioneelProgrammeren](images/FunctioneelProgrammeren.png)
+```java
+package domein;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+import static domein.DuckSpecies.*;
+
+public class DuckFactory {
+
+	/*public Duck createDuck(DuckSpecies specie) {
+		return switch (specie) {
+			case REDHEAD -> new RedheadDuck(new Quack(), new FlyWithWings());
+			case MALLARD -> new MallardDuck(new Quack(), new FlyWithWings());
+			case RUBBER -> new RubberDuck(new Squeak(), new FlyNoWay());
+			case DECOY -> new DecoyDuck(new MuteQuack(), new FlyNoWay());
+		};
+	}*/
+	
+	public DuckFactory() {
+		add(REDHEAD, () -> new Duck(new Quack(), new FlyWithWings(), () -> "Ik lijk op een roodkuifeend"));
+		add(MALLARD, () -> new Duck(new Quack(), new FlyWithWings(), () -> "Ik ben een echte wilde eend"));
+		add(RUBBER, () -> new Duck(new Squeak(), new FlyNoWay(), () -> "Ik ben een badeend"));
+		add(DECOY, () -> new Duck(new MuteQuack(), new FlyNoWay(), () -> "Ik ben een lokeend"));
+	}
+	
+	private final Map<DuckSpecies, Supplier<Duck>> factory = new HashMap<>();
+	
+	public final void add(DuckSpecies specie, Supplier<Duck> supplier) {
+		factory.put(specie, supplier);
+	}
+	
+	public Duck createDuck(DuckSpecies specie) {
+		Supplier<Duck> supplier = factory.get(specie);
+		return supplier != null ? supplier.get() : null;
+	}
+}
+```
+
+```java 
+package domein;
+
+public interface DisplayMethod {
+	public String display();
+}
+```
+
+```java 
+package domein;
+
+public /*abstract*/ class Duck {
+
+    private QuackBehavior quackBehavior;
+
+    private FlyBehavior flyBehavior;
+    
+    private final DisplayMethod displayMethod;
+    
+    public Duck(QuackBehavior quack, FlyBehavior fly, DisplayMethod displayMethod) {
+    	setFlyBehavior(fly);
+    	setQuackBehavior(quack);
+    	this.displayMethod = displayMethod;
+    }
+
+    public void setFlyBehavior(FlyBehavior flyBehavior) {
+        this.flyBehavior = flyBehavior;
+    }
+
+    public void setQuackBehavior(QuackBehavior quackBehavior) {
+        this.quackBehavior = quackBehavior;
+    }
+
+    public String performQuack() {
+        return quackBehavior.quack();
+    }
+
+    public String performFly() {
+        return flyBehavior.fly();
+    }
+
+    public String swim() {
+        return ("Alle eenden drijven, ook lokeenden");
+    }
+
+    public /*abstract*/ String display() {
+    	return displayMethod.display();
+    }
+
+    public void ANDERE_eend_achtige_methoden() {
+    }
+
+}
+```
 ## Design patterns door elkaar
 
 ### Oefening 1
