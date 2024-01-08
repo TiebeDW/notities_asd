@@ -870,6 +870,71 @@ public class DirtyState extends FileState {
 }
 ```
 
+## Facade Pattern
+
+### Waarom
+Een heel complex subsysteem eenvoudig aanspreken met slechts een handvol methodes.
+
+### Voorbeeld
+Je wilt een film kijken en in plaats van afzonderlijk het licht uit te doen, popcorn maken, de tv aan te zetten... roep je de methode wachtMovie() aan omdat allemaal voor jou te doen.
+
+### Stappen
+1. Maak een facade klasse met een paar handige methodes die je nodig hebt.
+
+### UML
+![DP_Facade](images/DP_Facade.png)
+
+### Code 
+
+```java 
+package domein_oef1;
+
+public class WeerStationController {
+
+    private WeerStation weerStation;
+
+    public double getTemperature() {
+    	//slecht naar onderhoud toe, want WeerStationController kent nu ook thermometer
+        //Thermometer thermometer = weerStation.getThermometer();
+        //return thermometer.getTemperature();
+        //OF
+        //return weerStation.getThermometer().getTemperature();
+    
+    	return weerStation.getTemperature();
+    	
+    }
+    //...
+}
+
+class WeerStation {
+
+    private Thermometer thermometer;
+
+    /*public Thermometer getThermometer() {
+        return thermometer;
+    }*/
+    //...
+    public double getTemperature() {
+    	return thermometer.getTemperature();
+    }
+}
+
+class Thermometer {
+
+    private double temperature;
+
+    public double getTemperature() {
+        return temperature;
+    }
+    //...
+}
+```
+
+### Oefening
+![DP_FacadeOef](images/DP_FacadeOef.png)
+
+#### Oplossing
+![DP_FacadeOefOpl](images/DP_FacadeOefOpl.png)
 
 ## Design patterns door elkaar
 
