@@ -932,3 +932,111 @@ class BoekhoudingTest {
 	}
 }
 ```
+
+### Teerling
+![JUnit_TeerlingOef](images/JUnit_TeerlingOef.png)
+![JUnit_TeerlingOefOpgave](images/JUnit_TeerlingOefOpgave.png)
+```java 
+public class Teerling {
+
+    private int aantalVlakken;
+    private final SecureRandom random;
+
+    public static final int DEFAULT = 6;
+    public static final int MIN_GRENS = 2;
+    public static final int MAX_GRENS = 100000;
+    
+    public Teerling(int aantalVlakken) {
+        setAantalVlakken(aantalVlakken);
+        random = new SecureRandom();
+    }
+
+    public Teerling() {
+        this(DEFAULT);
+    }
+
+    public int getAantalVlakken() {
+        return aantalVlakken;
+    }
+
+    private void setAantalVlakken(int aantalVlakken) {
+
+        if (aantalVlakken < MIN_GRENS || aantalVlakken > MAX_GRENS) {
+            throw new IllegalArgumentException(
+                    String.format("aantal vlakken moet liggen tussen %d en %d", MIN_GRENS, MAX_GRENS));
+        }
+        this.aantalVlakken = aantalVlakken;
+    }
+
+    public int gooi() {
+        return random.nextInt(aantalVlakken) + 1;
+    }
+}
+```
+
+```java 
+class TeerlingTest {
+	
+	private Teerling teerling;
+	private final int AANTAL = 100;
+
+	private void before(int grootte) {
+		if (grootte == DEFAULT)
+			teerling = new Teerling();
+		else
+			teerling = new Teerling(grootte);
+	}
+
+	private static Stream<Integer> opsommingCorrecteWaarden() {
+		return Stream.of(DEFAULT, MIN_GRENS,10,20,30,50,100,1000,MAX_GRENS);
+				
+	}
+	
+	@ParameterizedTest
+	//@ValueSource(ints = { DEFAULT, MIN_GRENS, 10, 15, 20, 30, 50, 100, 1000, MAX_GRENS })
+	@MethodSource("opsommingCorrecteWaarden")
+	public void maakTeerling_correcteGrootte_TeerlingAangemaakt(int grootte) {
+		before(grootte);
+		Assertions.assertEquals(grootte, teerling.getAantalVlakken());
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { Integer.MIN_VALUE, -100, -4, -1, MIN_GRENS - 1, 0, MAX_GRENS + 1 })
+	public void maakTeerling_foutieveGrootte_Exception(int grootte) {
+
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			new Teerling(grootte);
+		});
+	}
+
+//Opgelost met array
+	@ParameterizedTest
+	//@ValueSource(ints = { DEFAULT, MIN_GRENS, 10, 15, 20, 30, 50, 100, 1000, MAX_GRENS })
+	@MethodSource("opsommingCorrecteWaarden")
+	public void gooi_binnenDeGrenzen_van1TotGrootte(int grootte) {
+		before(grootte);
+		int[] resultaat = new int[teerling.getAantalVlakken()];
+		for (int i = 0; i < teerling.getAantalVlakken() * AANTAL; i++) {
+			int worp = teerling.gooi();
+			Assertions.assertTrue(worp >= 1 && worp <= teerling.getAantalVlakken());
+			resultaat[worp - 1]++;
+		}
+		Arrays.stream(resultaat).forEach(res -> Assertions.assertTrue(res > 0));
+	}
+
+//Opgelost met set	
+	@ParameterizedTest
+	//@ValueSource(ints = { DEFAULT, MIN_GRENS, 10, 15, 20, 30, 50, 100, 1000, MAX_GRENS })
+	@MethodSource("opsommingCorrecteWaarden")
+	public void gooi_binnenDeGrenzen2_van1TotGrootte(int grootte) {
+		before(grootte);
+		Set<Integer> resultaat = new HashSet<>();
+		for (int i = 0; i < teerling.getAantalVlakken() * AANTAL; i++) {
+			int worp = teerling.gooi();
+			Assertions.assertTrue(worp >= 1 && worp <= teerling.getAantalVlakken());
+			resultaat.add(worp);
+		}
+	    Assertions.assertTrue(resultaat.size() == teerling.getAantalVlakken());
+	}
+}
+```
