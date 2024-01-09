@@ -781,3 +781,154 @@ class PerfectGetalTest {
 	}
 }
 ```
+
+### Mockito boekhouding
+(voorbeeld examenvraag)
+![Mockito_BoekhoudingOef](images/Mockito_BoekhoudingOef.png)
+#### Domeinklases
+```java
+public record Aangifte( double belastingSchaal, double[] bedragen) {}
+
+//belastingSchaal()
+//bedragen()
+```
+```java 
+public class Boekhouding {
+  
+    public /*private*/ static final double BELASTINGSCHAAL_0 = 0.5;
+    public /*private*/ static final double BELASTINGSCHAAL_1 = 1.25;
+   
+    //STAP 1
+    private FactuurMap factuurMap;
+    
+    //STAP 2
+    public Boekhouding() {
+    	setFactuurMap(new FactuurMap()); //OF this(new FactuurMap());
+    }
+    
+    //STAP 3							OF constructor injectie
+    public final void setFactuurMap(FactuurMap factuurMap) {
+    	this.factuurMap = factuurMap;
+    }
+    
+    
+    public Aangifte genereerAangifte(String ondernemingsNummer) {
+    	//toegevoegd
+    	if(ondernemingsNummer == null || ondernemingsNummer.isBlank())
+    		throw new IllegalArgumentException("ondernemingsnummer verplicht in te vullen");
+    	
+        if (!ondernemingsNummer.matches("BE\\d{10}")) {
+            throw new IllegalArgumentException("Verkeerd formaat ondernemingsnummer");
+        }
+        
+        //STAP 4
+        //FactuurMap factuurMap = new FactuurMap();
+
+        double[] factuurOverzicht = factuurMap.geefBedragen(ondernemingsNummer);
+
+        return new Aangifte(berekenBelastingSchaal(factuurOverzicht), factuurOverzicht);
+    }
+
+    /*Op basis van de som van alle bedragen:
+    [0, 200,0[ => BELASTINGSCHAAL_0
+    200,0 of hoger => BELASTINGSCHAAL_1
+     */
+    private double berekenBelastingSchaal(double[] factuurOverzicht) {
+
+        double totaalBedrag = 0;
+        for (double bedrag : factuurOverzicht) {
+            totaalBedrag += bedrag;
+        }
+
+        if (totaalBedrag < 200.0) {
+            return BELASTINGSCHAAL_0;
+        }
+        return BELASTINGSCHAAL_1;
+    }
+}
+```
+```java
+public class FactuurMap {
+
+    private final SecureRandom random = new SecureRandom();
+    int aantal = random.nextInt(2, 4); // een getal tussen 2 en 3 wordt gegenereerd
+        
+    public double[] geefBedragen(String ondernemingsNummer) {
+        double[] bedragen = new double[aantal];
+        IntStream.range(0, aantal)
+                .forEach(i -> {
+                    //genereer een getal tussen 0 en 1000 [0, 1000[
+                	double bedrag = random.nextDouble(1000);
+                    
+                    //afronden tot 2 cijfers na de komma
+                    BigDecimal bd = new BigDecimal(bedrag); 
+                    bd = bd.setScale(2, RoundingMode.CEILING);
+                    bedrag = bd.doubleValue();
+                    
+                    bedragen[i] = bedrag;
+                    });     
+        return bedragen;
+    }
+}
+```
+#### Testklasse
+```java
+import static domein.Boekhouding.*;
+
+
+@ExtendWith(MockitoExtension.class)
+class BoekhoudingTest {
+
+	@Mock
+	private FactuurMap factuurMapMock;
+	
+	@InjectMocks
+	private Boekhouding boekhouding;
+	
+	private static Stream<Arguments> opsommingGeldigeWaarden(){
+		return Stream.of(
+				Arguments.of(new double[] {0.0, 0.0, 0.0}, BELASTINGSCHAAL_0), //mingrens BS0
+				Arguments.of(new double[] {20.0, 150.0, 29.99}, BELASTINGSCHAAL_0), //mingrens BS0 199,99
+				Arguments.of(new double[] {10.78, 30.25, 29.99}, BELASTINGSCHAAL_0),
+				Arguments.of(new double[] {150.0, 50.0, 0.0}, BELASTINGSCHAAL_1), //mingrens BS1
+				Arguments.of(new double[] {130.22, 150.99, 99.99}, BELASTINGSCHAAL_1),
+				Arguments.of(new double[] {0.0, 1000.0, 0.0}, BELASTINGSCHAAL_1),
+				
+				Arguments.of(new double[] {0.0, 0.0}, BELASTINGSCHAAL_0), //mingrens BS0
+				Arguments.of(new double[] {170.0, 29.99}, BELASTINGSCHAAL_0), //mingrens BS0 199,99
+				Arguments.of(new double[] {10.78, 29.99}, BELASTINGSCHAAL_0),
+				Arguments.of(new double[] {150.0, 50.0}, BELASTINGSCHAAL_1), //mingrens BS1
+				Arguments.of(new double[] {150.55, 80.88}, BELASTINGSCHAAL_1),
+				Arguments.of(new double[] {0.0, 1000.0}, BELASTINGSCHAAL_1));
+	}
+	
+	@ParameterizedTest
+	@MethodSource("opsommingGeldigeWaarden")
+	public void geldigeWaarden(double[] bedragen, double belastingSchaal) {
+		String onderneming = "BE0123456789";
+		Mockito.when(factuurMapMock.geefBedragen(onderneming)).thenReturn(bedragen);
+		
+		Aangifte aangifte = boekhouding.genereerAangifte(onderneming);
+		Assertions.assertEquals(belastingSchaal, aangifte.belastingSchaal());
+		Assertions.assertArrayEquals(bedragen, aangifte.bedragen());
+		
+		Mockito.verify(factuurMapMock).geefBedragen(onderneming);
+	}
+	
+	@ParameterizedTest
+	@NullAndEmptySource
+	@ValueSource(strings = {"    ", "BE012345", "BE01234567890", "NL0123456789", "000123456789", "be01234567890", "BE-1234567890", "BEAZERTYUIOP", "B*0123456789"})
+	public void ongeldigeWaarden(String onderneming) {
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {boekhouding.genereerAangifte(onderneming);});
+	}
+	
+	@ParameterizedTest
+	@ValueSource(strings = {"BE0000000000", "BE9999999999", "BE0123456789", "BE8426512736", "BE9876543210"})
+	public void geldigeWaarden(String onderneming) {
+		Assertions.assertDoesNotThrow(() -> {
+			Mockito.when(factuurMapMock.geefBedragen(onderneming)).thenReturn(new double[] {20,50});
+			boekhouding.genereerAangifte(onderneming);
+		});
+	}
+}
+```
