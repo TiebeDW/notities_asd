@@ -1094,3 +1094,65 @@ public class FileServer {
     }
 }
 ```
+
+## Herhalingsoefeningen
+
+### CollectionsOpstart0_start1
+![Java_CollectionsOpgaveOef](images/Java_CollectionsOpgaveOef.png)
+```java 
+public class SporterBeheerder {
+
+	private SporterDao sporterDao;
+	private Collection<Sporter> sportersLijst;
+
+	// TODO OEF MAP extra attributen
+	private Map<Integer, Sporter> sportersPerLidnummer;
+	private Map<Integer, List<Sporter>> sportersPerAantalReductiebonnen;
+ 
+	public SporterBeheerder() {
+		sporterDao = new SporterDaoJpa();
+		sportersLijst = sporterDao.findAll();
+		// TODO OEF MAP
+		maakOverzichten();
+	}
+
+	public Collection<Sporter> getSportersLijst() {
+		return Collections.unmodifiableCollection(sportersLijst);
+	}
+
+	// TODO OEF MAP extra methoden
+	public void maakOverzichten() {
+		sportersPerLidnummer = sportersLijst.stream().collect(Collectors.toMap(Sporter::getLidNr, Function.identity()));
+		sportersPerAantalReductiebonnen = sportersLijst.stream().collect(Collectors.groupingBy(sporter -> sporter.getReductiebonLijst().size()));
+	}
+
+	// VRAAG 6
+	public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
+		return sportersLijst.stream().filter(sporter -> sporter.getReductiebonLijst().contains(bon)).findAny()
+				.orElse(null);
+	}
+
+	// EXTRA vraag1
+	public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integer> kortingspercentage) {
+		return sportersLijst.stream().map(Sporter::getReductiebonLijst).flatMap(Collection::stream)
+				.filter(bon -> kortingspercentage.contains(bon.getPercentage())).collect(Collectors.toList());
+	}
+
+	// EXTRA vraag2
+	public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
+		sportersLijst.removeIf(
+				s -> s.getReductiebonLijst().stream().filter(bon -> bon.getPercentage() == perc).count() != 0);
+	}
+
+	public String geefSportersPerLidnr() {
+		throw new UnsupportedOperationException();
+	}
+
+	public String geefSportersPerAantalReductiebonnen() {
+		throw new UnsupportedOperationException();
+	}
+
+	// OEF GENERICS
+	// methode geefAlleSleutelsWaarden
+}
+```
