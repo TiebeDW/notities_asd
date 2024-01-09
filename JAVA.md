@@ -1430,3 +1430,232 @@ public class SportclubController {
 	//TODO OEF GENERICS...
 }
 ```
+
+### SporterBeheerder en SportClubController generics
+![Java_GenericsGenerics](images/Java_GenericsGenerics.png)
+![Java_GenericsGenerics2](images/Java_GenericsGenerics2.png)
+![Java_GenericsGenerics3](images/Java_GenericsGenerics3.png)
+
+```java 
+public class SporterBeheerder {
+
+	private SporterDao sporterDao;
+	private Collection<Sporter> sportersLijst;
+
+	// TODO OEF MAP extra attributen
+	private Map<Integer, Sporter> sportersPerLidnummer;
+	private Map<Integer, List<Sporter>> sportersPerAantalReductiebonnen;
+
+	public SporterBeheerder() {
+		sporterDao = new SporterDaoJpa();
+		sportersLijst = sporterDao.findAll();
+		// TODO OEF MAP
+		maakOverzichten();
+	}
+
+	public Collection<Sporter> getSportersLijst() {
+		return Collections.unmodifiableCollection(sportersLijst);
+	}
+
+	// TODO OEF MAP extra methoden
+	public void maakOverzichten() {
+		sportersPerLidnummer = sportersLijst.stream().collect(Collectors.toMap(Sporter::getLidNr, Function.identity()));
+		sportersPerAantalReductiebonnen = sportersLijst.stream()
+				.collect(Collectors.groupingBy(sporter -> sporter.getReductiebonLijst().size()));
+	}
+
+	// VRAAG 6
+	public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
+		return sportersLijst.stream().filter(sporter -> sporter.getReductiebonLijst().contains(bon)).findAny()
+				.orElse(null);
+	}
+
+	// EXTRA vraag1
+	public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integer> kortingspercentage) {
+		return sportersLijst.stream().map(Sporter::getReductiebonLijst).flatMap(Collection::stream)
+				.filter(bon -> kortingspercentage.contains(bon.getPercentage())).collect(Collectors.toList());
+	}
+
+	// EXTRA vraag2
+	public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
+		sportersLijst.removeIf(
+				s -> s.getReductiebonLijst().stream().filter(bon -> bon.getPercentage() == perc).count() != 0);
+	}
+	//TODO
+	public String geefSportersPerLidnr() {
+		return geefAlleSleutelsWaarden(sportersPerLidnummer);
+	}
+	//TODO
+	public String geefSportersPerAantalReductiebonnen() {
+		return geefAlleSleutelsWaarden(sportersPerAantalReductiebonnen);
+	}
+
+	public Sporter geefSporter(int sporterLidNr) {
+		return sportersPerLidnummer.get(sporterLidNr);
+	}
+
+	public List<Sporter> geefSportersMetEvenveelReductiebonnen(Sporter sporter) {
+		return sportersPerAantalReductiebonnen.get(sporter.getReductiebonLijst().size());
+	}
+
+	// OEF GENERICS
+	public <K, V> String geefAlleSleutelsWaarden(Map<K, V> eenMap) {
+		Map<K, V> gesorteerdeMap = new TreeMap<>(eenMap);
+		return gesorteerdeMap.entrySet().stream()
+				.map(entry -> String.format("%s: %s", entry.getKey(), entry.getValue()))
+				.collect(Collectors.joining("\n"));
+	}
+}
+```
+
+Sporter comparable maken
+```java 
+public class Sporter implements Comparable<Sporter> {
+
+	private int lidNr;
+	... 
+	//GENERICS
+	@Override
+	public int compareTo(Sporter sporter) {
+		return lidNr - sporter.lidNr;
+	}
+}
+```
+
+```java 
+public class SportclubController {
+
+	private SporterBeheerder sporterBeheerder;
+
+	public SportclubController() {
+		sporterBeheerder = new SporterBeheerder();
+	}
+	
+//TODO uncomment OEF GENERICS
+	public String geefSportersPerLidnr() {
+		return sporterBeheerder.geefSportersPerLidnr();
+	}
+
+	public String geefSportersPerAantalReductiebonnen() {
+		return sporterBeheerder.geefSportersPerAantalReductiebonnen();
+	}
+	
+	//TODO OEF GENERICS...
+	public String geefSporters() {
+		return geefGesorteerdeCollectie(sporterBeheerder.getSportersLijst());
+	}
+	
+	public String geefSportersMetEvenveelReductiebonnen(int sporterLidNr) {
+		Sporter sporter = sporterBeheerder.geefSporter(sporterLidNr);
+		if(sporter==null) {
+			return "Ongekend lidnummer";
+		}
+		List<Sporter> sporters = sporterBeheerder.geefSportersMetEvenveelReductiebonnen(sporter);
+		
+		if(sporters.size() == 1) {
+			return "Geen sporters met gelijk aantal kortingsbonnen";
+		}
+		
+		return sporters.stream().map(Sporter::getNaam).collect(Collectors.joining("-"));
+	}
+
+	//TODO OEF GENERICS...
+	public <T extends Comparable<T>> String geefGesorteerdeCollectie(Collection<T> collectie) {
+		return collectie.stream().sorted().map(T::toString).collect(Collectors.joining("\n"));
+	}
+}
+```
+
+```java 
+public class MyCollection<T extends Reductiebon> {
+	private Queue<T> deLijst;
+	
+	public MyCollection() {
+		deLijst = new ArrayDeque<>();
+	}
+	
+	public void addElement(T element) {
+		deLijst.offer(element);
+	}
+	
+	public T getElement() {
+		return deLijst.poll();
+	}
+	
+	public void addReeks(List<? extends T> bonnen) {
+		deLijst.addAll(bonnen);
+	}
+	
+	public double gemiddeldPercentage() {
+		return deLijst.stream().mapToDouble(T::getPercentage).average().getAsDouble();
+	}
+}
+```
+
+```java 
+public class ReductiebonBeheerder {
+
+	private ReductieBonDao reductiebonDao;
+	private List<Reductiebon> reductiebonLijst;
+	//EXTRA vraag generics
+    private MyCollection<Reductiebon> myCollection; 
+
+	public ReductiebonBeheerder() {
+		reductiebonDao = new ReductieBonDaoJpa();
+		reductiebonLijst = reductiebonDao.findAll();
+		myCollection = new MyCollection<>();
+	}
+
+	public ReductiebonBeheerder(List<Reductiebon> reductiebonLijst) {
+		reductiebonDao = new ReductieBonDaoJpa();
+		this.reductiebonLijst = reductiebonLijst;
+		myCollection = new MyCollection<>();
+	}
+
+	//EXTRA vraag generics	
+		
+		public void storeBon(Reductiebon bon) {
+			myCollection.addElement(bon);
+		}
+		public Reductiebon retrieveBon() {
+			return myCollection.getElement();
+		}
+		//TODO
+		public void addReeks(List<? extends Reductiebon> bonnen) {
+			myCollection.addReeks(bonnen);
+		}
+	
+	
+	public List<Reductiebon> getReductiebonLijst() {
+		return Collections.unmodifiableList(reductiebonLijst);
+	}
+
+	// VRAAG1
+	public List<String> geefReductiebonCodes(int percentage) {
+		return reductiebonLijst.stream().filter(bon -> bon.getPercentage() > percentage)
+				.map(Reductiebon::getReductiebonCode).collect(Collectors.toList());
+	}
+
+	// VRAAG2
+	public void sorteerReductiebonnen() {
+		reductiebonLijst.sort(Comparator.comparing(Reductiebon::getPercentage)
+				.thenComparing(Comparator.comparing(Reductiebon::getReductiebonCode).reversed()));
+	}
+
+	// VRAAG3
+	public double geefGemPercVanBonnenInToekomst()
+	{
+		return reductiebonLijst.stream().filter(bon -> bon.getEinddatum().isAfter(LocalDate.now())).
+				mapToDouble(Reductiebon::getPercentage).average().getAsDouble();
+	}
+
+	// VRAAG4
+	public List<LocalDate> geefUniekeEinddatums() {
+	     return reductiebonLijst.stream().
+                 map(Reductiebon::getEinddatum).
+                 distinct().sorted().
+                 collect(Collectors.toList()); 
+	}
+	
+}
+```
