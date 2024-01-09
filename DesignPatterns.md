@@ -1070,6 +1070,20 @@ public /*abstract*/ class Duck {
 
 }
 ```
+
+### No Klasse
+Verwijderen van alle doe klasses, geluiden en doe.
+
+#TODO
+
+## MVC
+= een verzameling van design patterns, geen dp op zich
+
+Kunnen zeggen op examen dat Facade en observer zeker in een mvc zit. 
+![MVC](images/MVC.png)
+![MVC1](images/MVC1.png)
+![MVC3](images/MVC3.png)
+
 ## Design patterns door elkaar
 
 ### Oefening 1
