@@ -1321,3 +1321,112 @@ public class SporterBeheerder {
 	// methode geefAlleSleutelsWaarden
 }
 ```
+
+### SporterBeheerder en SportClubController toMap
+![Java_toMapOef1](images/Java_toMapOef1.png)
+```java 
+package domein;
+
+public class SporterBeheerder {
+
+	private SporterDao sporterDao;
+	private Collection<Sporter> sportersLijst;
+
+	// TODO OEF MAP extra attributen
+	private Map<Integer, Sporter> sportersPerLidnummer;
+	private Map<Integer, List<Sporter>> sportersPerAantalReductiebonnen;
+ 
+	public SporterBeheerder() {
+		sporterDao = new SporterDaoJpa();
+		sportersLijst = sporterDao.findAll();
+		// TODO OEF MAP
+		maakOverzichten();
+	}
+
+	public Collection<Sporter> getSportersLijst() {
+		return Collections.unmodifiableCollection(sportersLijst);
+	}
+
+	// TODO OEF MAP extra methoden
+	public void maakOverzichten() {
+		sportersPerLidnummer = sportersLijst.stream().collect(Collectors.toMap(Sporter::getLidNr, Function.identity()));
+		sportersPerAantalReductiebonnen = sportersLijst.stream().collect(Collectors.groupingBy(sporter -> sporter.getReductiebonLijst().size()));
+	}
+
+	// VRAAG 6
+	public Sporter geefEenSporterMetGegevenReductiebon(Reductiebon bon) {
+		return sportersLijst.stream().filter(sporter -> sporter.getReductiebonLijst().contains(bon)).findAny()
+				.orElse(null);
+	}
+
+	// EXTRA vraag1
+	public List<Reductiebon> geefAlleReductiebonnenMetKortingsPercentageX(List<Integer> kortingspercentage) {
+		return sportersLijst.stream().map(Sporter::getReductiebonLijst).flatMap(Collection::stream)
+				.filter(bon -> kortingspercentage.contains(bon.getPercentage())).collect(Collectors.toList());
+	}
+
+	// EXTRA vraag2
+	public void verwijderAlleSportersMetReductiebonMetPercX(int perc) {
+		sportersLijst.removeIf(
+				s -> s.getReductiebonLijst().stream().filter(bon -> bon.getPercentage() == perc).count() != 0);
+	}
+
+	public String geefSportersPerLidnr() {
+		throw new UnsupportedOperationException();
+	}
+
+	public String geefSportersPerAantalReductiebonnen() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public Sporter geefSporter(int sporterLidNr) {
+		return sportersPerLidnummer.get(sporterLidNr);
+	}
+	
+	public List<Sporter> geefSportersMetEvenveelReductiebonnen(Sporter sporter){
+		return sportersPerAantalReductiebonnen.get(sporter.getReductiebonLijst().size());
+	}
+	// OEF GENERICS
+	// methode geefAlleSleutelsWaarden
+
+}
+```
+```java 
+public class SportclubController {
+
+	private SporterBeheerder sporterBeheerder;
+
+	public SportclubController() {
+		sporterBeheerder = new SporterBeheerder();
+	}
+	
+//TODO uncomment OEF GENERICS
+//	public String geefSportersPerLidnr() {
+//		return sporterBeheerder.geefSportersPerLidnr();
+//	}
+//
+//	public String geefSportersPerAantalReductiebonnen() {
+//		return sporterBeheerder.geefSportersPerAantalReductiebonnen();
+//	}
+
+	public String geefSporters() {
+		throw new UnsupportedOperationException();
+	}
+	
+	public String geefSportersMetEvenveelReductiebonnen(int sporterLidNr) {
+		Sporter sporter = sporterBeheerder.geefSporter(sporterLidNr);
+		if(sporter==null) {
+			return "Ongekend lidnummer";
+		}
+		List<Sporter> sporters = sporterBeheerder.geefSportersMetEvenveelReductiebonnen(sporter);
+		
+		if(sporters.size() == 1) {
+			return "Geen sporters met gelijk aantal kortingsbonnen";
+		}
+		
+		return sporters.stream().map(Sporter::getNaam).collect(Collectors.joining("-"));
+	}
+
+	//TODO OEF GENERICS...
+}
+```
