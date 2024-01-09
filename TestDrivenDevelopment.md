@@ -738,3 +738,46 @@ class ContinentServiceTest {
 	}
 }
 ```
+
+## Herhalingsoefeningen 
+
+### Perfect getal
+![JUnit_OefPerfectGetal](images/JUnit_OefPerfectGetal.png)
+```java 
+class PerfectGetalTest {
+
+	private PerfectGetal perfectGetal;
+
+	@BeforeEach
+	public void before() {
+		perfectGetal = new PerfectGetal();
+	}
+
+    //Oplossing 1 TI	
+	/*@ParameterizedTest
+	@ValueSource(ints = { 6, 28, 496, 8128 })
+	public void isPerfect_PerfectGetal_True(int getal) {
+		assertTrue(perfectGetal.isPerfect(getal));
+	}
+
+	@ParameterizedTest
+	@ValueSource(ints = { 0, 1, 2, 7, 10, 9000 })
+	public void isPerfect_GeenPerfectGetal_False(int getal) {
+		assertFalse(perfectGetal.isPerfect(getal));
+	}*/
+
+	//Oplossing 2TI	
+	//TODO
+	@ParameterizedTest
+	@CsvSource({"6, true", "0, false", "28, true", "496, true", "2, false"})
+	public void isPerfectGetal(int getal, boolean resultaat) {
+		Assertions.assertEquals(resultaat, perfectGetal.isPerfect(getal));
+	}
+	
+	@ParameterizedTest
+	@ValueSource(ints = { -1, -10, Integer.MIN_VALUE })
+	public void isPerfect_OngeldigGetal_Exception(int getal) {
+		assertThrows(IllegalArgumentException.class, () -> perfectGetal.isPerfect(getal));
+	}
+}
+```
