@@ -418,6 +418,171 @@ public class DomeinController {
 }
 ```
 
+### toMap
+```java 
+package domein;
+public class Sporter {
+
+	private int lidNr;
+	private String naam;
+    private String voornaam;
+    
+	public Sporter(int lidNr, String naam, String voornaam) {
+		setLidNr(lidNr);
+		setNaam(naam);
+		setVoornaam(voornaam);
+	}
+
+	public int getLidNr() {
+		return lidNr;
+	}
+
+	private void setLidNr(int lidNr) {
+		this.lidNr = lidNr;
+	}
+
+	public String getNaam() {
+		return naam;
+	}
+
+	private void setNaam(String naam) {
+		this.naam = naam;
+	}
+
+	public String getVoornaam() {
+		return voornaam;
+	}
+
+	private void setVoornaam(String voornaam) {
+		this.voornaam = voornaam;
+	}
+	
+	@Override
+	public String toString()
+	{
+		return String.format("%s %s", naam, voornaam);
+	}
+}
+```
+```java 
+package main;
+import domein.Sporter;
+public class VoorbeeldToMap {
+
+	public static void main(String args[])
+	{
+		new VoorbeeldToMap().voorbeeld();
+	}
+	
+	public void voorbeeld()
+	{
+		List<Sporter> sportersLijst = 
+			List.of(new Sporter(789, "Keters", "Jan"),
+					new Sporter(123, "Blondee","Ann"), 
+					new Sporter(456, "Keters", "Ann"),
+					new Sporter(147, "Vandriessche","Els"));
+		
+		System.out.printf("vertrekpunt lijst%n%s%n%n", sportersLijst);
+		//van lijst naar map (per lidnummer - lidnummer is uniek)
+		Map<Integer, Sporter> mapPerLidnummer = sportersLijst.stream().
+				collect(Collectors.toMap(
+						Sporter::getLidNr, Function.identity()));
+		
+		System.out.printf(String.format("per lidnummer%n%s%n%n", 
+				geefMapAlsString(mapPerLidnummer)));
+		
+		
+		try
+		{
+			//Poging van lijst naar map (per voornaam, waarde 1 sporter)
+			Map<String, Sporter> mapPerVoornaam = sportersLijst.stream().
+					collect(Collectors.toMap(
+							Sporter::getVoornaam, Function.identity()));
+		}catch(IllegalStateException e)
+		{
+			System.out.printf("poging per voornaam, waarde 1 sporter%n%s%n%n",e.getMessage());
+		}
+		
+		//van lijst naar map (per voornaam, waarde 1 Sporter). 
+		Map<String, Sporter> mapPerVoornaam = sportersLijst.stream().
+				collect(Collectors.toMap(
+						Sporter::getVoornaam, Function.identity(), 
+						(voornaam1, voornaam2) -> voornaam1));
+		
+		System.out.printf(String.format("per voornaam, waarde 1 sporter%n%s%n%n", 
+				geefMapAlsString(mapPerVoornaam)));
+		
+		//van lijst naar map (per naam, waarde 1 Sporter), gesorteerd per sleutel
+		Map<String, Sporter> mapPerNaam = sportersLijst.stream().
+				collect(Collectors.toMap(
+						Sporter::getNaam, Function.identity(), 
+						(naam1, naam2) -> naam1, TreeMap::new));
+		
+		System.out.printf(String.format("per naam, waarde 1 sporter, gesorteerd op sleutel%n%s%n%n", 
+				geefMapAlsString(mapPerNaam)));
+		
+		//van lijst naar map (per lidnummer - lidnummer is uniek), gesorteerd per sleutel
+		Map<Integer, Sporter> mapPerLidnummer2 = sportersLijst.stream().
+				collect(Collectors.toMap(
+						Sporter::getLidNr, Function.identity(),
+						(key1, key2) -> key1, TreeMap::new));
+		
+		System.out.printf(String.format("per lidnummer, gesorteerd op sleutel%n%s%n%n", 
+				geefMapAlsString(mapPerLidnummer2)));
+	}
+	
+	public <K,V> String geefMapAlsString(Map<K,V> eenMap)
+	{
+		return eenMap.entrySet().stream().
+			map(entry -> String.format("sleutel: %-12s waarde: %-15s", entry.getKey(), entry.getValue())).
+					collect(Collectors.joining("\n"));	
+	}
+}
+```
+```java 
+public class OefFruitMap_opgave {
+
+    public static void main(String args[]) {
+        String kist[][] = {{"appel", "peer", "citroen", "kiwi", "perzik"},
+        {"banaan", "mango", "citroen", "kiwi", "zespri", "pruim"},
+        {"peche", "lichi", "kriek", "kers", "papaya"}};
+
+        List<String> list = Stream.of(kist).flatMap(Arrays::stream).collect(Collectors.toList());
+        Scanner in = new Scanner(System.in);
+
+        //declaratie + creatie map
+        //------------------------------
+        //Map<String, Double> fruitMap = new TreeMap<>();
+                            
+        /*Berg de fruit list van vorige oefeningen in een boom
+ op zodat dubbels ge�limineerd worden.
+ Er moet ook de mogelijkheid zijn de bijhorende prijs
+ (decimale waarde) bij te houden.*/
+        //------------------------------------------------------------
+        //list.forEach(fruit -> fruitMap.put(fruit, null));
+        Map<String, Double> fruitMap = list.stream().collect(Collectors.toMap(f -> f, f -> 0.0, (fruit1, fruit2) -> fruit1, TreeMap::new));
+        
+        /*Doorloop de boom in lexicaal oplopende volgorde en vraag
+ telkens de bijhorende prijs, die je mee in de boom opbergt.*/
+        //------------------------------------------------------------
+        //fruitMap.forEach(...);
+        fruitMap.entrySet().stream().forEach(entry -> {
+        	System.out.printf("Prijs van %s : ", entry.getKey());
+        	double prijs = in.nextDouble();
+        	entry.setValue(prijs);
+        });
+        
+        
+        /*Druk vervolgens de volledige lijst in twee
+ kolommen (naam : prijs) in lexicaal oplopende volgorde af
+ op het scherm.*/
+        //------------------------------------------------------------
+        fruitMap.forEach((fruit, prijs) -> System.out.printf("%s\t%.2f%n", fruit, prijs));
+                 
+    }
+}
+```
+
 ## Generics
   - Alle generieke methoden hebben een **"type paramter section"**, dat tussen < en > staat.  
   - Elke **"type paramter section"** bevat één of meer **"(formal) type parameters"**, gescheiden door komma's
