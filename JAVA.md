@@ -1659,3 +1659,121 @@ public class ReductiebonBeheerder {
 	
 }
 ```
+
+### Garage
+#### Netwerken
+![Java_GarageNetOef](images/Java_GarageNetOef.png)
+![Java_GarageNetOef2](images/Java_GarageNetOef2.png)
+
+```java 
+public class ClientAanbieder {
+	
+	public static void main(String[] args) {
+		new  ClientAanbieder().run();
+	}
+
+
+	private void run() {
+		System.out.println("Client Aanbieder stuurt een aanbieding");
+		//TODO Maak een TCP verbinding met localhost op poort 23400
+		//     Stuur een regel (= auto in aanbieding) "1DEF256", "Opel", "Combo"
+		//     Beeindig de client
+		try(Socket s = new Socket(InetAddress.getLocalHost(), 23400)){
+			Formatter output = new Formatter(s.getOutputStream());
+			output.format("%s %s %s%n", "1DEF256", "Opel", "Combo");
+			output.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+```java 
+public class ClientLuisteraar {
+	public static void main(String[] args) {
+		new ClientLuisteraar().run();
+	}
+	private void run() {
+		System.out.println("Client Luisteraar ontvangt de lijst");
+		//Gegeven:
+		//      Maak een UDP toegang om een pakket te ontvangen op poort 9999
+		//      Wacht op het pakket en toon de ontvangen lijst van auto's af op het scherm
+		//      Beeindig de client
+		try (DatagramSocket dgSocket = new DatagramSocket(9999)){
+			byte[] buffer = new byte[100];
+			DatagramPacket dgPacket = new DatagramPacket(buffer, buffer.length);
+			dgSocket.receive(dgPacket);
+			System.out.println(new String(dgPacket.getData(), dgPacket.getOffset(), dgPacket.getLength()));
+		} catch (IOException ex) {
+			ex.printStackTrace();
+		}
+	}
+}
+```
+```java 
+public class KoopjesService extends Thread {
+	private List<Auto> koopjes = new ArrayList<>();
+	private List<InetAddress> clients = new ArrayList<>();
+
+	public KoopjesService() { // voorlopig één klant op localhost (dit werken we niet verder uit, klanten
+								// kunnen zich hier registreren)
+		try {
+			clients.add(InetAddress.getLocalHost());
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void run() {
+		// Gegeven: toegang tot UDP (uitvoer lijst van auto's)
+		try (DatagramSocket dgSocket = new DatagramSocket()) {
+			// TODO voorzie toegang tot TCP (invoer auto's)
+			try (ServerSocket ss = new ServerSocket(23400, 5)) {
+
+				// start lus om telkens de info van één aanbieder te ontvangen
+				while (true) {
+					System.out.println("wacht op aanbieder");
+					Socket s = ss.accept();
+					// indien verbinding lees de info
+					Scanner input = new Scanner(s.getInputStream());
+					koopjes.add(new Auto(input.next(), input.next(), input.next()));
+					System.out.println("aanbieding toegevoegd");
+					// beëindig de TCP verbinding
+					s.close();
+				
+
+				// Gegeven: maak pakketje klaar met de lijst van auto's als één string en
+				// verstuur naar alle
+				// alle geregistreerde ClientLuisteraars
+				DatagramPacket dgPakket = new DatagramPacket(koopjes.toString().getBytes(),
+						koopjes.toString().getBytes().length);
+				clients.forEach(clientAddress -> {
+					System.out.println("zend datagram naar client");
+					try {
+						dgPakket.setPort(9999);
+						dgPakket.setAddress(clientAddress);
+						dgSocket.send(dgPakket);
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				});
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			// einde lus
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+#### Collections - generics - streams
+![Java_GarageColOef](images/Java_GarageColOef.png)
+![Java_GarageColOef2](images/Java_GarageColOef2.png)
+![Java_GarageColOef3](images/Java_GarageColOef3.png)
+![Java_GarageColOef4](images/Java_GarageColOef4.png)
+![Java_GarageColOef5](images/Java_GarageColOef5.png)
+
