@@ -1777,3 +1777,140 @@ public class KoopjesService extends Thread {
 ![Java_GarageColOef4](images/Java_GarageColOef4.png)
 ![Java_GarageColOef5](images/Java_GarageColOef5.png)
 
+```java 
+public class Garage {
+
+	private final File auto;
+	private final File onderhoud;
+	private Map<String, Auto> autoMap;
+	private Map<String, List<Onderhoud>> autoOnderhoudMap;
+	private List<Set<Auto>> overzichtLijstVanAutos;
+
+	private final int AANTAL_OVERZICHTEN = 3;
+	private int overzichtteller;
+
+	public Garage(String bestandAuto, String bestandOnderhoud) {
+		auto = new File(bestandAuto);
+		onderhoud = new File(bestandOnderhoud);
+		initGarage();
+	}
+
+	private void initGarage() {
+		PersistentieController persistentieController = new PersistentieController(auto, onderhoud);
+
+		// Set<Auto> inlezen - STAP 1
+		Set<Auto> autoSet = new HashSet<>(persistentieController.geefAutos());
+		System.out.println("STAP 1");
+
+		// Maak map van auto's: volgens nummerplaat - STAP 2
+		autoMap = omzettenNaarAutoMap(autoSet);
+		System.out.println("STAP 2");
+		autoMap.forEach((key, value) -> System.out.printf("%s %s %n", key, value));
+
+		// Onderhoud inlezen - STAP 3
+		List<Onderhoud> onderhoudLijst = persistentieController.geefOnderhoudVanAutos();
+		System.out.println("STAP 3 : " + onderhoudLijst);
+
+		// lijst sorteren - STAP 4
+		sorteren(onderhoudLijst);
+		System.out.println("STAP 4");
+		onderhoudLijst.forEach(System.out::println);
+
+		// lijst samenvoegen - STAP 5
+		aangrenzendePeriodenSamenvoegen(onderhoudLijst);
+		System.out.println("STAP 5");
+		onderhoudLijst.forEach(System.out::println);
+
+		// Maak map van onderhoud: volgens nummerplaat - STAP 6
+		autoOnderhoudMap = omzettenNaarOnderhoudMap(onderhoudLijst);
+		System.out.println("STAP 6");
+		autoOnderhoudMap.forEach((key, value) -> System.out.printf("%s %s%n", key, value));
+
+		// Maak overzicht: set van auto's - STAP 7
+		overzichtLijstVanAutos = maakOverzicht(autoOnderhoudMap);
+		System.out.println("STAP 7");
+		overzichtLijstVanAutos.forEach(System.out::println);
+	}
+
+	// Maak map van auto's: volgens nummerplaat - STAP 2
+	private Map<String, Auto> omzettenNaarAutoMap(Set<Auto> autoSet) {
+		return autoSet.stream().collect(Collectors.toMap(Auto::getNummerplaat, Function.identity())); // OF auto -> auto
+																										// ipv
+																										// function.identity
+	}
+
+	// lijst sorteren - STAP 4
+	private void sorteren(List<Onderhoud> lijstOnderhoud) {
+		lijstOnderhoud.sort(Comparator.comparing(Onderhoud::getNummerplaat).thenComparing(Onderhoud::getBegindatum));
+	}
+
+	// lijst samenvoegen - STAP 5
+	private void aangrenzendePeriodenSamenvoegen(List<Onderhoud> lijstOnderhoud) {
+//java 7
+		Iterator<Onderhoud> it = lijstOnderhoud.iterator();
+		Onderhoud onderhoud = null;
+		Onderhoud onderhoudNext = null;
+		while (it.hasNext()) {
+			onderhoud = onderhoudNext;
+			onderhoudNext = it.next();
+			if (onderhoud != null && onderhoud.getNummerplaat().equals(onderhoudNext.getNummerplaat())) {
+				if (onderhoud.getEinddatum().plusDays(1).equals(onderhoudNext.getBegindatum())) {// samenvoegen:
+					onderhoud.setEinddatum(onderhoudNext.getEinddatum());
+					it.remove();
+					onderhoudNext = onderhoud;
+				}
+			}
+		}
+	}
+
+	// Maak map van onderhoud: volgens nummerplaat - STAP 6
+	private Map<String, List<Onderhoud>> omzettenNaarOnderhoudMap(List<Onderhoud> onderhoudLijst) {
+		return onderhoudLijst.stream().collect(Collectors.groupingBy(Onderhoud::getNummerplaat));
+	}
+
+	// Hulpmethode - nodig voor STAP 7
+	private int sizeToCategorie(int size) {
+		return switch (size) {
+		case 0, 1 -> 0;
+		case 2, 3 -> 1;
+		default -> 2;
+		};
+	}
+
+	// Maak overzicht: set van auto's - STAP 7
+	private List<Set<Auto>> maakOverzicht(Map<String, List<Onderhoud>> autoOnderhoudMap) {
+		// Hint:
+		// van Map<String, List<Onderhoud>>
+		// naar Map<Integer, Set<Auto>> (hulpmethode gebruiken)
+		// naar List<Set<Auto>>
+		return autoOnderhoudMap.entrySet().stream()
+				.collect(Collectors.groupingBy(entry -> sizeToCategorie(entry.getValue().size()), TreeMap::new,
+						Collectors.mapping(entry -> autoMap.get(entry.getKey()), Collectors.toSet())))
+				.values().stream().collect(Collectors.toList());
+	}
+
+//Oefening DomeinController:
+	public String autoMap_ToString() {
+		String res = autoMap.values().stream().sorted(Comparator.comparing(Auto::getNummerplaat)).map(Auto::toString)
+				.collect(Collectors.joining("\n"));
+		return res;
+	}
+
+	public String autoOnderhoudMap_ToString() {
+		String res = autoOnderhoudMap.entrySet().stream().sorted(Map.Entry.comparingByKey())
+				.map(e -> String.format("%s: %n%s", e.getKey(),
+						e.getValue().stream().map(Onderhoud::toString).collect(Collectors.joining("\n"))))
+				.collect(Collectors.joining("\n"));
+		return res;
+	}
+
+	public String overzicht_ToString() {
+		overzichtteller = 1;
+		String res = overzichtLijstVanAutos.stream()
+				.map(setAuto -> String.format("%d%n%s", overzichtteller++,
+						setAuto.stream().map(Auto::toString).collect(Collectors.joining("\n"))))
+				.collect(Collectors.joining("\n"));
+		return res;
+	}
+}
+```
