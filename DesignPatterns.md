@@ -1091,7 +1091,7 @@ Kunnen zeggen op examen dat Facade en observer zeker in een mvc zit.
 ![](images/DP_oef1.png)
 
 #### Oplossing
-
+Decorator
 ![](images/DP_oef1_opl.png)
 
 ```java
@@ -1166,11 +1166,285 @@ public class main {
 ```
 
 ### Oefening 2
-
 ![](images/DP_oef2.png)
 
 #### Oplossing
+Facade
 ![](images/DP_oef2_opl.png)
+
+### Oefening 3
+![DP_HerhalingsOef3](images/DP_HerhalingsOef3.png)
+![DP_herhalingsOef3-2](images/DP_herhalingsOef3-2.png)
+![DP_herhalingsOef3-3](images/DP_herhalingsOef3-3.png)
+
+#### Oplossing
+Strategy
+![DP_HerhalingsOef3Opl](images/DP_HerhalingsOef3Opl.png)
+```java
+public class Arbeider implements Statuut//extends Werknemer
+{
+    private double uurloon;
+    private int ploegenstelsel;
+
+    public Arbeider(/*String voornaam, String familienaam, String geboorteDatum,*/
+    		double uurloon, int ploegenstelsel) {
+        //super(voornaam, familienaam, geboorteDatum);
+        this.uurloon = uurloon;
+        this.ploegenstelsel = ploegenstelsel;
+    }
+
+    @Override
+    public double geefJaarInkomst() {
+        return uurloon * ploegenstelsel;
+    }
+}
+```
+```java 
+public class Bediende implements Statuut{
+    
+    private double maandwedde;
+
+    public Bediende(/*String voornaam, String familienaam, String geboorteDatum,*/ double maandwedde) {
+        //super(voornaam, familienaam, geboorteDatum);
+        this.maandwedde = maandwedde;
+    }
+    
+    public double geefJaarInkomst() {
+        return maandwedde*12;
+    }
+}
+```
+```java 
+public class Manager extends Bediende{
+    
+    private double premie;
+
+    //public Manager(String voornaam, String familienaam, String geboorteDatum, double maandwedde, double premie) {
+    public Manager(double maandwedde, double premie) {
+        //super(voornaam, familienaam, geboorteDatum, maandwedde);
+        super(maandwedde);
+        this.premie = premie;
+    }
+    
+    @Override
+    public double geefJaarInkomst() {
+        return super.geefJaarInkomst() + premie;
+    }
+}
+```
+```java 
+public interface Statuut {
+
+	double geefJaarInkomst();
+
+}
+```
+```java 
+public class Werknemer {
+    
+    private final String voornaam;
+    private final String familienaam;
+    private final String geboorteDatum;
+    private Statuut statuut;
+
+    public Werknemer(String voornaam, String familienaam, String geboorteDatum, Statuut statuut) {
+        this.voornaam = voornaam;
+        this.familienaam = familienaam;
+        this.geboorteDatum = geboorteDatum;
+        setStatuut(statuut);
+    }
+    
+    public double geefJaarInkomst() {
+    	return statuut.geefJaarInkomst();
+    }
+    
+    public void setStatuut(Statuut statuut) {
+    	this.statuut = statuut;
+    }
+}
+```
+
+### Oefening 4
+We hebben een klasse Printer. Een printer-object kan zich in diverse interne statussen bevinden: Ready (wacht op printen), Start (printen kan beginnen), Printing (bezig met printen) en End (gedaan met printen).  We voorzien de methoden ‘print’ en ‘cancel’.
+
+#### Oplossing
+State
+![DP_HerhalingsOef4OplState](images/DP_HerhalingsOef4OplState.png)
+![DP_HerhalingsOef4Opl](images/DP_HerhalingsOef4Opl.png)
+```java 
+public class Printer {
+
+	private String documentTePrinten;
+	private PrinterState currentState;
+
+	public Printer() {
+		toState(new ReadyState(this));
+	}
+
+	public String cancel() {
+		return currentState.cancel();
+	}
+
+	public String print(String document) {
+		documentTePrinten = document;
+		return currentState.print();
+	}
+	
+	protected String getDocumentTePrinten() {
+		return documentTePrinten;
+	}
+
+	protected void toState(PrinterState state) {
+		currentState = state;
+	}
+}
+```
+```java 
+public class EndState extends PrinterState {
+
+	public EndState(Printer printer) {
+		super(printer);
+	}
+
+	public String handle() {
+		printer.toState(new ReadyState(printer));
+		return "einde";
+	}
+}
+```
+```java 
+public abstract class PrinterState {
+
+	protected Printer printer;
+
+	public PrinterState(Printer printer) {
+		this.printer = printer;
+	}
+
+	public String cancel() {
+		return "cancel is niet mogelijk";
+	}
+
+	public String print() {
+		return "printen is niet mogelijk";
+	}
+
+	public String handle() {
+		return "interne bewerking niet mogelijk";
+	}
+}
+```
+```java 
+public class PrintingSate extends PrinterState {
+
+	public PrintingSate(Printer printer) {
+		super(printer);
+	}
+
+	public String handle() {
+		String msg = String.format("bezig met printen %s%ngedaan met printen%n", printer.getDocumentTePrinten());
+		PrinterState state = new EndState(printer);
+		printer.toState(state);
+		return String.format("%s%s", msg, state.handle());
+	}
+
+	public String cancel() {
+		PrinterState state = new EndState(printer);
+		printer.toState(state);
+		return String.format("Printen wordt geanuleerd%n%s", state.handle());
+	}
+}
+```
+```java
+public class ReadyState extends PrinterState {
+
+	public ReadyState(Printer printer) {
+		super(printer);
+	}
+
+	public String print() {
+		PrinterState state = new StartState(printer);
+		printer.toState(state);
+		return String.format("Klaar om te printern%n%s", state.handle());
+	}
+}
+```
+```java 
+public class StartState extends PrinterState {
+
+	public StartState(Printer printer) {
+		super(printer);
+	}
+
+	public String handle() {
+		PrinterState state = new PrintingSate(printer);
+		printer.toState(state);
+		return String.format("Printer kan worden gestart%n%s", state.handle());
+	}
+
+	public String cancel() {
+		PrinterState state = new EndState(printer);
+		printer.toState(state);
+		return String.format("Printen wordt geanulleerd%n%s", state.handle());
+	}
+}
+```
+
+### Oefening 5
+![DP_HerhalingsOef5](images/DP_HerhalingsOef5.png)
+
+#### Oplossing
+Simple factory
+```java 
+public class NoDocument extends Document{
+	
+	public NoDocument(String filePath) {
+		super(filePath);
+	}
+	
+	public void preview() {}
+	
+	public void print() {}
+	
+	public void loadFromFile(String filePath) {}
+}
+```
+```java 
+public class DocumentFactory {
+//	public static Document createDocument(String filePath) {
+//		if(filePath.endsWith(".xls"))
+//			return new Spreadsheet(filePath);
+//		if(filePath.endsWith(".ppt"))
+//			return new Presentation(filePath);
+//		return new NoDocument(filePath);
+//	}
+	
+	//Code voor functioneel programmeren
+	private static Map<String, Function<String, Document>> map = new HashMap<>(); 
+	
+	static {
+		map.put("xls", path -> new Spreadsheet(path));
+		map.put("ppt", path -> new Presentation(path));
+	}
+	
+	public static Document createDocument(String filePath) {
+		Function<String, Document> function = map.get(filePath.contains(".")?filePath.split("\\.")[1]:"");
+		return function!=null?function.apply(filePath) : new NoDocument(filePath);
+	}
+}
+```
+```java 
+public class DocumentManager {
+
+    public void print(String filePath) {
+        DocumentFactory.createDocument(filePath).print();
+    }
+
+    public void preview(String filePath) {
+        DocumentFactory.createDocument(filePath).preview();
+    }
+}
+```
 
 ### Oefening 6
 
@@ -1182,7 +1456,7 @@ public class main {
 ![](images/DP_oef6_opl2.png)
 
 ### Oefening 7
-
+Strategy
 ![](images/DP_oef7.png)
 
 #### Oplossing
