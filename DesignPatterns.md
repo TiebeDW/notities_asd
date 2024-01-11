@@ -1186,4 +1186,23 @@ public class main {
 ![](images/DP_oef7.png)
 
 #### Oplossing
-![](images/DP_oef7_opl.png)
+![DP_oef7_opl](images/DP_oef7_opl.png)
+
+```java
+public class Calculator {
+
+	private Computation computation;
+
+	public int compute(Computation computation, int x, int y) {
+		return computation.compute(x, y);
+	}
+}
+```
+```java 
+public class Add implements Computation {
+
+	public int compute(int x, int y) {
+		return x+y;
+	}
+}
+```
