@@ -1452,8 +1452,173 @@ public class DocumentManager {
 
 #### Oplossing
 
-![](images/DP_oef6_opl.png)
+![DP_HerhalingsOef6Opl](images/DP_HerhalingsOef6Opl.png)
 ![](images/DP_oef6_opl2.png)
+```java 
+public interface Observer {
+	void update(Soort soort);
+}
+```
+```java 
+public interface Subject {
+	void addObserver(Observer obs);
+	void removeObserver(Observer obs);
+}
+```
+```java 
+public class ObservableString implements Subject 
+{
+    private String theString;
+    private final Soort soort;
+	private Set<Observer> observers;
+
+	public ObservableString(Soort soort) {   	
+		observers = new HashSet<>();
+        this.soort = soort;
+        setTheString("");
+    }
+	
+	public String getTheString(String theString) {
+		return theString;
+	}
+	
+	public void setTheString(String theString) {
+		this.theString = theString;
+		notifyObservers();
+	}
+
+    public void addObserver(Observer obs) {
+		observers.add(obs);
+	}
+
+	public void removeObserver(Observer obs) {
+		observers.remove(obs);
+	}
+
+	private void notifyObservers() {
+		observers.forEach(obs -> obs.update(soort)); //pushmodel voor soort
+													 //pullmodel voor echte inhoud via facade
+	}
+}
+```
+```java 
+public class DomeinController //FACADE
+{
+    private ObservableString observableBedrijfId;
+    private ObservableString observableStageId;
+
+    public DomeinController() {
+        observableStageId = new ObservableString(Soort.STAGE);
+        observableBedrijfId = new ObservableString(Soort.BEDRIJF);
+    }
+
+    public String getBedrijfId() {
+        return observableBedrijfId.getTheString();
+    }
+
+    public String getStageId() {
+        return observableStageId.getTheString();
+    }
+
+    public void setBedrijfId(String bedrijfId) {
+        observableBedrijfId.setTheString(bedrijfId);
+    }
+
+    public void setStageId(String stageId) {
+        observableStageId.setTheString(stageId);
+    }
+
+	public void addObserver(Soort soort, Observer obs) {
+		switch (soort) {
+			case BEDRIJF -> observableBedrijfId.addObserver(obs);
+			case STAGE -> observableStageId.addObserver(obs);
+		}
+	}
+
+	public void removeObserver(Soort soort, Observer obs) {
+		switch (soort) {
+			case BEDRIJF -> observableBedrijfId.removeObserver(obs);
+			case STAGE -> observableStageId.removeObserver(obs);
+		}
+	}
+}
+```
+```java
+public class BedrijfStageFrameController extends HBox {
+
+    private final DomeinController domeinController;
+
+    private final FormPanelController formPanel;
+    private final DetailPanelController detailPanel;
+
+    public BedrijfStageFrameController(DomeinController domeinController) {
+
+        this.domeinController = domeinController;
+
+        formPanel = new FormPanelController(domeinController);
+        detailPanel = new DetailPanelController(domeinController);
+        
+        //TODO STAGE
+        domeinController.addObserver(STAGE, detailPanel);
+        //TODO BEDRIJF
+        domeinController.addObserver(BEDRIJF, detailPanel);
+        
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("BedrijfStageFrame.fxml"));
+        loader.setRoot(this);
+        loader.setController(this);
+        try {
+            loader.load();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        getChildren().addAll(formPanel, detailPanel);
+    }
+}
+```
+```java
+public class DetailPanelController extends AnchorPane implements Observer {
+
+    @FXML
+    private TextField txtStageId;
+
+    @FXML
+    private TextField txtBedrijfId;
+
+    private final DomeinController domeinController;
+
+    public DetailPanelController(DomeinController domeinController) {
+
+        this.domeinController = domeinController;
+
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("DetailPanel.fxml"));
+        loader.setRoot(this);
+        loader.setController(this);
+        try {
+            loader.load();
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
+        }
+        
+    }
+
+    //Voor JUnit
+    public String getStageId() {
+        return txtStageId.getText();
+    }
+
+    public String getBedrijfId() {
+        return txtBedrijfId.getText();
+    }
+    //TODO
+    public void update(Soort soort) {
+    	switch(soort) {
+    		case BEDRIJF -> txtBedrijfId.setText(domeinController.getBedrijfId());
+    		case STAGE -> txtStageId.setText(domeinController.getStageId());
+    	}
+    }
+}
+```
+
 
 ### Oefening 7
 Strategy
