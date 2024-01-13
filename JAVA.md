@@ -420,7 +420,6 @@ public class DomeinController {
 
 ### toMap
 ```java 
-package domein;
 public class Sporter {
 
 	private int lidNr;
@@ -465,8 +464,6 @@ public class Sporter {
 }
 ```
 ```java 
-package main;
-import domein.Sporter;
 public class VoorbeeldToMap {
 
 	public static void main(String args[])
@@ -1325,8 +1322,6 @@ public class SporterBeheerder {
 ### SporterBeheerder en SportClubController toMap
 ![Java_toMapOef1](images/Java_toMapOef1.png)
 ```java 
-package domein;
-
 public class SporterBeheerder {
 
 	private SporterDao sporterDao;

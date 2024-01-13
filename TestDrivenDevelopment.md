@@ -58,16 +58,9 @@ public class Weegschaal {
 ```
 Testklasse
 ```java
-package testen;
-
-import java.math.BigInteger;
-
 import org.junit.jupiter.api.Assertions;
 //static wegdoen zorgt ervoor dat je assertions wel moet schrijven, 
 //indien hij er wel staat moet je ze niet schrijven
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import domein.Weegschaal;
 
 class WeegschaalTest {
 
@@ -124,12 +117,6 @@ We voorzien enkele testgevallen:
 3,1 + 1,1 = 4,2
 
 ```java 
-package testen;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import domein.Calculator;
 
 class CalculatorTest {

@@ -940,12 +940,6 @@ class Thermometer {
 ![OefFunctioneelProgrammeren](images/OefFunctioneelProgrammeren.png)
 
 ```java 
-package domein;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-import static domein.DuckSpecies.*;
-
 public class DuckFactory {
 
 	/*public Duck createDuck(DuckSpecies specie) {
@@ -979,12 +973,6 @@ public class DuckFactory {
 #### Volgende oefening
 ![FunctioneelProgrammeren](images/FunctioneelProgrammeren.png)
 ```java
-package domein;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Supplier;
-import static domein.DuckSpecies.*;
-
 public class DuckFactory {
 
 	/*public Duck createDuck(DuckSpecies specie) {
@@ -1073,8 +1061,7 @@ public /*abstract*/ class Duck {
 
 ### No Klasse
 Verwijderen van alle doe klasses, geluiden en doe.
-
-#TODO
+![DP_FunctioneelVerwijderen](images/DP_FunctioneelVerwijderen.png)
 
 ## MVC
 = een verzameling van design patterns, geen dp op zich
@@ -1234,9 +1221,7 @@ public class Manager extends Bediende{
 ```
 ```java 
 public interface Statuut {
-
 	double geefJaarInkomst();
-
 }
 ```
 ```java 
