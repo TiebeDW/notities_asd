@@ -596,7 +596,9 @@ class LandServiceTest {
 
 #### Opgave
 
-![PDF oefenining](extras/Mockito_oefening.pdf)
+![MockitoOef](images/MockitoOef.png)
+![MockitoOef1](images/MockitoOef1.png)
+![MockitoOef2](images/MockitoOef2.png)
 
 #### Oplossing
 De testen klassen
