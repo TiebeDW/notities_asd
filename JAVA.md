@@ -63,8 +63,8 @@ public List<LocalDate> geefUniekeEinddatums() {
 ### Sporterbeheerder
 
 #### Vraag 5:
-```java
 Bekijk deze klasse en pas aan. Er is nog een encapsulatie lek.
+
 ```java
 public Collection<Sporter> getSportersLijst() {
 	return Collections.unmodifiableCollection(sportersLijst);
