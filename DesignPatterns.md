@@ -378,7 +378,7 @@ Wanneer we willen dat bij een update van een bepaald opbject, andere objecten oo
 
 ### Voorbeeld
 
-We meten de temperatuur, luchtvochtigheid en de luchtdruk en geven ze wveer op het scherm. Deze veranderen constant en bij elke verandering moeten de schermen geüpdated worden. Subject = weatherData, observer = schermen.
+We meten de temperatuur, luchtvochtigheid en de luchtdruk en geven ze weer op het scherm. Deze veranderen constant en bij elke verandering moeten de schermen geüpdated worden. Subject = weatherData, observer = schermen.
 
 ### Stappen
 
@@ -956,6 +956,8 @@ Je wilt een film kijken en in plaats van afzonderlijk het licht uit te doen, pop
 ### UML
 
 ![DP_Facade](images/DP_Facade.png)
+![DP_facadeUML](images/DP_facadeUML.png)
+![DP_facadeUML1](images/DP_facadeUML1.png)
 
 ### Code
 
